@@ -25,7 +25,10 @@ struct State {
     float renderHeight, maxBlendStep, nativeBarWidth, scaledBarWidth;
 };
 extern "C" __declspec(dllexport) State bfxState = {2};
-struct SymbolState { U32 samples, interpolatedPositions, betweenLogicMoves, logicMoves; };
+struct SymbolState {
+    U32 samples, interpolatedPositions, betweenLogicMoves, logicMoves;
+    U32 selectedIcons, enemyIcons, peakSelectedIcons, peakEnemyIcons;
+};
 extern "C" __declspec(dllexport) SymbolState bfxSymbols = {0};
 static U32 symbolObject, symbolLogicFrame;
 static V3 symbolPosition;
@@ -64,6 +67,7 @@ typedef int (__fastcall *ProjectFn)(void*,void*,V3*,const V3*);
 typedef U32 (__fastcall *ColorFn)(void*,void*);
 typedef int (__fastcall *IntFn)(void*,void*);
 typedef const Matrix* (__fastcall *DrawableTransformFn)(void*,void*);
+typedef int (__fastcall *RelationshipFn)(void*,void*,void*);
 
 static bool inMatch() {
     void *logic=field<void*>(base,0x9FE78C);
@@ -313,11 +317,24 @@ static void diamond(float x,float y,float r,U32 color) {
     tri(x,y-r,x+r,y,x,y+r,color);tri(x,y-r,x,y+r,x-r,y,color);
 }
 static U32 alpha(U32 color,float a) { return (color&0xffffff)|((U32)(255*a)<<24); }
+static bool symbolSelected(void *object) {
+    // BFME selects the horde drawable; its individual soldiers are contained
+    // objects. Follow the native containment chain so the whole battalion lights.
+    for(int depth=0;object && depth<8;depth++) {
+        void *drawable=field<void*>(object,0x84);
+        if(drawable && field<U8>(drawable,0x43C)) return true;
+        void *parent=field<void*>(object,0x274);
+        if(parent==object) break;
+        object=parent;
+    }
+    return false;
+}
 typedef HRESULT (__stdcall *Com2)(void*,U32,U32);
 typedef HRESULT (__stdcall *ComPointer)(void*,void*);
 typedef HRESULT (__stdcall *ComStage)(void*,U32,U32,U32);
 static void renderSymbols() {
     bfxState.icons=bfxState.buildings=bfxState.units=bfxState.hiddenSkipped=0;
+    bfxSymbols.selectedIcons=bfxSymbols.enemyIcons=0;
     float fade=smooth((renderHeight-1400.0f)/600.0f);
     if(!activeView || !inMatch() || activeView!=field<void*>(base,0x9FEA3C) || fade<=0 || bfxState.faults) return;
     void *cam=field<void*>(activeView,0x104);
@@ -378,20 +395,30 @@ static void renderSymbols() {
         float y=viewport.y+(1-projected.y)*viewport.height*.5f;
         if(x<12||y<12||x>viewport.width-12||y>viewport.height-15) continue;
         // Native palantir/control bar remains on top conceptually.
-        if(y>viewport.height-260 && x<400) continue;
+        // BFME scales its palantir/control bar with the viewport dimensions.
+        if(y>viewport.y+viewport.height*(1-260.0f/768) &&
+           x<viewport.x+viewport.width*(400.0f/1024)) continue;
         bool building=(field<U8>(tmpl,0x108)&0x80)!=0;
-        U32 color=alpha(address<ColorFn>(0x28B026)(obj,0),fade);
+        bool selected=symbolSelected(obj);
+        bool enemy=owner!=local && address<RelationshipFn>(0x2AD0C6)(local,0,field<void*>(obj,0x304))==0;
+        U32 color=alpha(enemy?0xF04444:address<ColorFn>(0x28B026)(obj,0),fade);
         U32 white=alpha(0xF3E5BC,fade),dark=alpha(0x071018,fade);
+        U32 border=alpha(selected?0xFFE45C:0xD0C6AD,fade);
+        float outer=selected?8.5f:7.5f,inner=selected?7.25f:6.0f;
+        if(selected)bfxSymbols.selectedIcons++;
+        if(enemy)bfxSymbols.enemyIcons++;
         if(building) {
-            square(x,y,9,dark);square(x,y,7,white);square(x,y,5,color);
-            tri(x-5,y-2,x,y-6,x+5,y-2,white);bfxState.buildings++;
+            square(x,y,outer,dark);square(x,y,inner,border);square(x,y,4.5f,color);
+            tri(x-4,y-1.5f,x,y-5,x+4,y-1.5f,white);bfxState.buildings++;
         } else {
-            diamond(x,y,9,dark);diamond(x,y,7,white);diamond(x,y,5,color);
-            tri(x-2,y+2,x,y-2,x+2,y+2,white);bfxState.units++;
+            diamond(x,y,outer,dark);diamond(x,y,inner,border);diamond(x,y,4.5f,color);
+            tri(x-1.5f,y+1.5f,x,y-1.5f,x+1.5f,y+1.5f,white);bfxState.units++;
         }
         bfxState.icons++;
     }
     if(!trackedSymbol) symbolObject=0;
+    if(bfxSymbols.selectedIcons>bfxSymbols.peakSelectedIcons)bfxSymbols.peakSelectedIcons=bfxSymbols.selectedIcons;
+    if(bfxSymbols.enemyIcons>bfxSymbols.peakEnemyIcons)bfxSymbols.peakEnemyIcons=bfxSymbols.enemyIcons;
     if(!vertexCount) return;
     void *state=0;
     typedef HRESULT (__stdcall *MakeState)(void*,U32,void**);

@@ -14,7 +14,6 @@ typedef void (__fastcall *FloatFn)(void*,void*,float);
 typedef float (__fastcall *GroundFn)(void*,void*,float,float,V3*);
 typedef void (__fastcall *AttackMoveFn)(void*,void*,const V3*,int,int);
 typedef void* (__fastcall *FindObjectFn)(void*,void*,U32);
-typedef int (__fastcall *RelationshipFn)(void*,void*,void*);
 
 static void *battleTemplate(const char *text) {
     U32 name=0;

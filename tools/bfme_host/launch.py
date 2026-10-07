@@ -4,6 +4,7 @@ import ctypes
 import hashlib
 import json
 import pathlib
+import re
 import subprocess
 import sys
 import winreg
@@ -49,7 +50,7 @@ def main():
     if args.vanilla:
         game_args = []
     if args.window or args.test:
-        game_args += ['-win', '-xres', '1280', '-yres', '720']
+        game_args += ['-win', '-xres', '1920', '-yres', '1080']
     if not args.menu and not args.test:
         game_args += ['-file', args.map]
     print(subprocess.list2cmdline([str(game_dir / 'lotrbfme2.exe'), *game_args]), flush=True)
@@ -67,7 +68,7 @@ def main():
     import game_smoke
     if args.battle:
         import battle
-        battle.register(game_smoke,pathlib.Path(config['mod']))
+        battle.register(game_smoke,pathlib.Path(config['mod']),test=args.test)
     if args.strategic_check:
         import strategic_check
         strategic_check.register(game_smoke)
@@ -102,6 +103,14 @@ def main():
     boot.boot_image.OUT = boot.OUT
     boot.boot_image.build.EXE = pathlib.Path(config['game']) / 'game.dat'
     appdata = manifest.parent / 'appdata'
+    # Retail loads Resolution from Options.ini after parsing the command line.
+    # Update only the isolated profile, preserving the user's original profile.
+    profile = boot.prepare_sandbox_profile(appdata)
+    options = profile / 'Options.ini'
+    text = options.read_text()
+    text, replaced = re.subn(r'(?m)^Resolution\s*=.*$', 'Resolution = 1920 1080', text)
+    if not replaced:text += '\nResolution = 1920 1080\n'
+    options.write_text(text)
     if args.test:
         status = game_smoke.main([
             'skirmish', '--game-dir', str(game_dir), '--retail', '--appdata', str(appdata),
@@ -120,7 +129,6 @@ def main():
     if running:
         parser.error(f'Another BFME2 session is already running: {running}')
     ctypes.WinDLL('user32').SetProcessDPIAware()
-    boot.prepare_sandbox_profile(appdata)
     guard = boot.ProfileGuard()
     game = game_smoke.Game(game_dir, subprocess.list2cmdline(game_args), appdata)
     if not args.menu:

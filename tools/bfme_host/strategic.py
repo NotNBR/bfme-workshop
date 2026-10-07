@@ -87,10 +87,11 @@ def register(smoke, dll, trace=False, battle=False):
             def observe(game):
                 state=read_state(game)
                 if state:
-                    symbols=game.read(game.res['symbol_state_address'],16)
-                    if symbols and len(symbols)==16:
-                        state['symbols']=dict(zip(['samples','interpolatedPositions','betweenLogicMoves','logicMoves'],
-                                                  struct.unpack('<4I',symbols)))
+                    symbols=game.read(game.res['symbol_state_address'],32)
+                    if symbols and len(symbols)==32:
+                        state['symbols']=dict(zip(['samples','interpolatedPositions','betweenLogicMoves','logicMoves',
+                                                  'selectedIcons','enemyIcons','peakSelectedIcons','peakEnemyIcons'],
+                                                  struct.unpack('<8I',symbols)))
                     self.res['strategic']=state
                     (smoke.OUT/'strategic-live.json').write_text(json.dumps(state,indent=2))
                     if writer:
