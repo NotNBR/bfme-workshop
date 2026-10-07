@@ -1,0 +1,29 @@
+# Native integration notices
+
+The new bfmeXbar native adapter code is distributed under **GPL-3.0-only**. See `LICENSE.txt` for the license text. Retail BFME assets are separate, user-supplied inputs; this does not license those assets.
+
+## OpenSAGE
+
+Source: https://github.com/OpenSAGE/OpenSAGE
+
+`tools/native/w3d.py` adapts the adaptive-delta decoding algorithm described by `W3dAdaptiveDeltaCodec.cs` and `W3dAdaptiveDeltaBlock.cs`, with the motion-channel layouts from the associated parser files. Copyright remains with the OpenSAGE contributors. The source was retrieved on 7 October 2026.
+
+OpenSAGE's complete license notice is preserved in [OPENSAGE-LICENSE.md](OPENSAGE-LICENSE.md), including its reference to EA-derived components. [OPENSAGE-LICENSE-EA.md](OPENSAGE-LICENSE-EA.md) is also preserved. The adapter does not embed EA game binaries or claim ownership of original art.
+
+## Recoil / Spring
+
+Source and releases: https://github.com/beyond-all-reason/RecoilEngine
+
+Pinned local release: `2026.07.04`, Windows amd64. Archive SHA-256:
+
+`2e0a43744115e6b3cbd7db4a36aecc3d28afdef4fb615d07ab01703e4b5525e1`
+
+The engine is downloaded as a separate ignored runtime. Its GPL source and license are available in that repository. Built-in Lua gadget and unit-script handlers retain the original authors' notices inside the engine's base packages. `unit_script.lua` invokes that existing handler, attributed to Tobi Vollebregt.
+
+## openbfme2 and BFME II
+
+`D:\LAN\openbfme2` supplies read-only reconstruction and file-layout references. Its source notices remain in the original repository. `D:\LAN\bfme2` supplies the user's local game assets, extracted only into ignored local runtime files.
+
+## Python dependencies
+
+NumPy and Pillow are installed separately, using the versions in `tools/native/requirements.txt`; their package distributions include their respective license notices.
