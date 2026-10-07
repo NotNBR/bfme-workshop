@@ -22,14 +22,22 @@ def main():
     parser.add_argument('--zoom-check', action='store_true')
     parser.add_argument('--strategic', action='store_true')
     parser.add_argument('--strategic-check', action='store_true')
+    parser.add_argument('--camera-trace', action='store_true', help='Record native camera properties per frame to CSV')
     parser.add_argument('--vanilla', action='store_true', help='Diagnostic run without the bfmeXbar mod')
     parser.add_argument('--dry-run', action='store_true')
-    parser.add_argument('--map', default=r'maps\map mp tournament udun.map')
+    parser.add_argument('--map')
+    parser.add_argument('--battle', choices=['orcs-elves'], help='Start a prepared Mordor-versus-Elves battalion battle')
     args = parser.parse_args()
+    args.map=args.map or (r'maps\map mp grey mountains.map' if args.battle else r'maps\map mp tournament udun.map')
+    if args.battle and args.map.lower()!=r'maps\map mp grey mountains.map':
+        parser.error('The prepared battle uses Grey Mountains; omit --map for this preset.')
+    if args.battle:args.strategic=True
     if args.zoom_check:
         args.test = True
     if args.strategic_check:
         args.strategic = args.test = True
+    if args.camera_trace:
+        args.strategic = True
     manifest = ROOT / 'runtime/bfme-host/manifest.json'
     if not manifest.exists():
         parser.error('Run Setup bfmeXbar.cmd first.')
@@ -57,6 +65,9 @@ def main():
     sys.dont_write_bytecode = True
     sys.path.insert(0, str(reference))
     import game_smoke
+    if args.battle:
+        import battle
+        battle.register(game_smoke,pathlib.Path(config['mod']))
     if args.strategic_check:
         import strategic_check
         strategic_check.register(game_smoke)
@@ -70,7 +81,7 @@ def main():
             extension=ROOT/'runtime/bfme-host/extension/bfmexbar-strategic.dll'
             if not extension.is_file():
                 parser.error('Strategic extension is missing. Run Setup bfmeXbar.cmd first.')
-            strategic.register(game_smoke, extension)
+            strategic.register(game_smoke, extension, trace=args.camera_trace or args.strategic_check,battle=bool(args.battle))
     boot = game_smoke.boot_smoke
     # This installation's registry selects the Witch-king-named profile leaf,
     # even though the executable is BFME2. Seed the leaf the game actually uses.
@@ -102,6 +113,8 @@ def main():
             return zoom_check.validate(output)
         if args.strategic_check:
             return strategic_check.validate(output)
+        if args.battle:
+            return battle.validate(output)
         return status
     running = game_smoke.other_games()
     if running:

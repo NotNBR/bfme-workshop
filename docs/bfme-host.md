@@ -24,17 +24,17 @@ Extending the permitted camera height alone exposed BFME2's separate rendering c
 
 ## Scope
 
-Eightfold zoom limits and fourfold multiplayer command-point ceilings are configured. Starting caps, production, resources, original units and animations are preserved. Strategic camera/symbols are implemented as described below. These changes are not a simulation scalability fix, nor a completed Supreme Commander engine splice. Improved strategic ordering and very large battle performance still need implementation and validation.
+Sixteenfold zoom limits and fourfold multiplayer command-point ceilings are configured. Starting caps, production, resources, original units and animations are preserved. Strategic camera/symbols are implemented as described below. These changes are not a simulation scalability fix, nor a completed Supreme Commander engine splice. Improved strategic ordering and very large battle performance still need implementation and validation.
 
 ## Orthographic view and symbols
 
-`native/host/strategic.cpp` compiles to a project-local 32-bit DLL. The launcher loads it on the game's own main thread through the existing debug call helper. Three complete, fingerprinted instruction spans are intercepted: `W3DView::setCameraTransform` (RVA 0x8BE6B), `W3DView::getPickRay` (0x89658), and `DX8Wrapper::End_Scene` (0x122BE0). Original instructions run through trampolines, and disk binaries stay unchanged.
+`native/host/strategic.cpp` compiles to a project-local 32-bit DLL. The launcher loads it on the game's own main thread through the existing debug call helper. Five complete, fingerprinted instruction spans are intercepted: `W3DView::setCameraTransform` (RVA 0x8BE6B), `W3DView::getPickRay` (0x89658), `DX8Wrapper::End_Scene` (0x122BE0), `W3DView::updateView` (0x85B36), and the native drawable UI-queue helper (0x239FCC). Original instructions run through trampolines, and disk binaries stay unchanged.
 
-Between heights 800 and 1400, a smoothstep based on camera height tilts the tactical camera overhead and fades in symbols. At 1400 the native camera switches to its orthographic projection. The orthographic plane matches the perspective plane's ground scale at the transition. Zooming in restores the original camera transform/projection. Only TheTacticalView is changed; other view instances and the cursor camera are excluded.
+Between measured native heights 800 and 2600, a smoothstep plus a critically damped, per-frame tilt response moves the tactical camera overhead. Symbols fade in separately from height 1400 to 2000. Once the tilt settles overhead, the native camera switches to orthographic projection. The response rate is 18/s (approximately 0.26 seconds to complete 95% of a step). BFME2 retains its own zoom interpolation. The orthographic plane matches the perspective plane's ground scale at the transition. Zooming in restores the original camera transform/projection. Only TheTacticalView is changed; other view instances and the cursor camera are excluded.
 
 Orthographic picking needs a separate correction: retail's getPickRay assumes all rays start at one camera point. The extension generates parallel rays through the corresponding orthographic-plane position. Native selection and order processing continue downstream. A diagnostic projects three points from those rays back through BFME2's own CameraClass::Project and measures the pixel error.
 
-Symbols are batched Direct3D9 triangles drawn before the engine finishes the scene. A D3D state block preserves/restores game rendering state. Owner-colored diamonds identify selectable units; roof-marked squares identify structures, including selectable construction plots. The overlay reads native world objects and does not replace them. The same hidden, hiddenByStealth and fullyObscuredByShroud flags used by Drawable::draw are checked. Objects belonging to another player additionally require clear/partly-clear native shroud status. No fog or stealth state is changed.
+Symbols are batched Direct3D9 triangles drawn before the engine finishes the scene. A D3D state block preserves/restores game rendering state. Owner-colored diamonds identify selectable units; roof-marked squares identify structures, including selectable construction plots. The overlay reads native world objects and does not replace them. Positions come from Drawable::getTransform (RVA 0x27628E), the cached client-frame interpolation used by native Drawable::draw, rather than the discrete simulation position at Object +0x38. This adds no second smoothing filter. The exported bfxSymbols counters verify movement between simulation ticks during the battle regression. The same hidden, hiddenByStealth and fullyObscuredByShroud flags used by Drawable::draw are checked. Objects belonging to another player additionally require clear/partly-clear native shroud status. No fog or stealth state is changed.
 
 The native palantir region is excluded from the symbol layer. Per-class artwork and dense-army icon clustering are future work. The extension currently activates in skirmish mode; campaign and multiplayer remain unvalidated.
 
@@ -53,3 +53,37 @@ The camera regression check subsequently reached actual heights 300 and 2400, re
 `start.ps1 -ZoomCheck` calls BFME2's native camera-height setter at a normal height of 300 and at the current map's maximum height, captures both views, records actual heights and near/far planes, and runs the same skirmish checks. The native setter is invoked on the game thread through the reference debugger's call helper. Screenshots must also be visually inspected: a nonblank HUD alone cannot prove the terrain is visible. A preliminary wheel-message test was inconclusive because it did not establish that the camera moved.
 
 Source dependencies remain in the adjacent openbfme2 checkout, read only. See that checkout's license and the existing [third-party notices](../native/THIRD_PARTY.md) for the reverse-engineered and format references. Python dependencies are pinned in `tools/bfme_host/requirements.txt`.
+
+## Camera movement tracing and health bars
+
+`start.ps1 -Window -CameraTrace` records `runtime/bfme-host/verification/camera-trace.csv`. `-StrategicCheck` also records a trace. Ordinary launches do not write this potentially large CSV. Each trace launch replaces the latest CSV; copy evidence into `artifacts/` before another recording.
+
+A bounded 4,096-row native ring records four phases: before the native view update, after the original camera transform, after the view update, and the actual rendered frame. The launcher drains it once per second without file IO in the rendering hook. Sequence numbers detect overwritten/partial rows. Fields include time, requested height, native previous-frame height, measured height used by the extension, native focus, camera XYZ/back vector/elevation, view-plane extents, projection type, near/far clipping planes, tilt blend, and health-bar widths.
+
+The trace established that View +0x40 is the requested height, while +0x50 can still hold the preceding frame's height when `buildCameraTransform` has already interpolated the matrix. Neither is a reliable pivot distance during movement. The extension now measures the freshly built matrix's height above the native focus plane (+0x14). This removes the incorrect pivot displacement. A recorded Grey Mountains sweep reduced the maximum aim-point error from about 1,877 world units in the earlier test build to less than 0.001; the earlier build also briefly crossed below the focus plane. Camera angles continue updating on frames without mouse-wheel input.
+
+The final part of the perspective transition moves the camera back and narrows its view plane together, approaching parallel rays before the orthographic switch. Far clipping is extended for that temporary camera position. The native perspective and its clipping values are restored on return.
+
+Health rectangles are prepared by the native routine at RVA 0x278DFE and stored at Drawable +0x460. Its queue-0 call to 0x239FCC provides a fresh rectangle before UI rendering. Scaling there avoids repeatedly shrinking stale rectangles on the preparation routine's early-return paths. The extension first removes the old `1/getZoom()` size factor (getter 0x858E4 reads View +0xA8 times +0x3C), then scales by 300 divided by measured camera height. Bars retain their anchor, native colors, health amount, visibility rules and 3-pixel height. Width is bounded to 12–36 pixels overhead, with a smoothly increasing upper limit of 240 pixels at normal height.
+
+The strategic regression selects an owned, visible starting structure, checks its health rectangle at near/intermediate/far heights, checks camera restoration and native picking, and rejects trace drift, below-focus camera positions or dropped samples. A manual wheel movement during a scheduled snapshot can change the requested height and invalidate that snapshot; the CSV retains those movements for diagnosis.
+
+Plot a saved trace with the optional plotting dependency `matplotlib==3.10.7`:
+
+```powershell
+.\.venv\Scripts\python.exe tools/bfme_host/camera_trace.py artifacts/bfme-host/camera-trace/after-fix.csv --before artifacts/bfme-host/camera-trace/before-fix.csv --output artifacts/bfme-host/camera-trace/camera-movement
+```
+
+This writes a PNG and JSON summary. The plot uses only final rendered-frame samples; intermediate native transforms are retained in the CSV for diagnosis.
+
+## Orcs versus Elves preset and extended zoom
+
+The default package now uses a 16x camera limit (Grey Mountains: 4,800 instead of 2,400 in the previous 8x package). Its process-local far-plane multiplier is extended to match. Actual map boundaries and fog of war still apply.
+
+`--battle orcs-elves` selects Mordor and Elves in the native skirmish slots, using the effective PlayerTemplate file's ordering. The optional `battle.inc` helper creates 16 `MordorFighterHorde`, five `ElvenLorienWarriorHorde`, and five `ElvenLorienArcherHorde` objects through ThingFactory::newObject (RVA 0x2D0A23). Objects retain their faction's default team, native templates, formations and combat. Placement samples TerrainLogic's ground-height virtual and uses native Thing position/orientation setters. On this preset's Grey Mountains map they face each other in the valley north of the local fortress.
+
+Factory creation alone leaves empty hordes. After placement, the preset invokes HordeContain's payload virtual (primary vtable 0x845050, slot 28, RVA 0x46E8EE), which delegates to TransportContain and initializes horde membership. A later game-thread callback sends native attack-move commands through each AICommandInterface. Creation and initial orders happen once. Runtime counters, faction choices and screenshots are recorded under `verification/`; this is a local scenario preset, not a change to ordinary skirmish starting armies.
+
+Addresses were checked against the supported binary: Player default-team offset +0x2EC from the native relationship loop at 0x2A7C70, Object ID +0x74 from the native factory, AI pointer +0x258, AICommandInterface +0x20, Object lookup 0x49DC5, and attack-move 0x295A0F. Source reconstruction labels alone were not sufficient for the default-team layout.
+
+The expanded-range regression passed at heights 300, 1800, 4800 and back to 300. The intermediate view remained in perspective, full overhead picking error was below 0.000087 pixel, and near/far health-bar bounds passed. The Orcs-versus-Elves regression confirmed all 26 attack-move orders and 226 symbol movements between simulation ticks, with no first-chance exceptions. Evidence is preserved under `artifacts/bfme-host/camera-trace/` and `artifacts/bfme-host/battle/`.

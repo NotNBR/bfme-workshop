@@ -29,11 +29,11 @@ def command_limits(text,factor):
 def main():
     p=argparse.ArgumentParser()
     p.add_argument('--bfme',type=pathlib.Path,default=ROOT.parent/'lotrbfme2'/'local'/'bfme2')
-    p.add_argument('--zoom-factor',type=float,default=8)
+    p.add_argument('--zoom-factor',type=float,default=16)
     p.add_argument('--army-factor',type=float,default=4)
     args=p.parse_args()
-    if not 1<=args.zoom_factor<=12 or not 1<=args.army_factor<=10:
-        p.error('Zoom factor must be 1–12, army factor 1–10')
+    if not 1<=args.zoom_factor<=24 or not 1<=args.army_factor<=10:
+        p.error('Zoom factor must be 1–24, army factor 1–10')
     game=args.bfme.resolve()
     for file in ('lotrbfme2.exe','game.dat','INI.big','Maps.big','apt/AptLevel0.big','apt/Background.big'):
         if not (game/file).is_file():p.error('Missing BFME file: '+str(game/file))

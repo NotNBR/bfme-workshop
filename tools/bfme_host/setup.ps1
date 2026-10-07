@@ -1,4 +1,4 @@
-param([string]$BfmePath='', [double]$ZoomFactor=8, [double]$ArmyFactor=4)
+param([string]$BfmePath='', [double]$ZoomFactor=16, [double]$ArmyFactor=4)
 $ErrorActionPreference='Stop'
 . (Join-Path $PSScriptRoot '..\native\python.ps1')
 $pythonExe=Find-BfxPython
