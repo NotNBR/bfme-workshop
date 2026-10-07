@@ -16,4 +16,6 @@ if ($BfmePath) { $buildArgs+=@('--bfme',$BfmePath) }
 & $pythonExe @buildArgs
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 & $pythonExe (Join-Path $PSScriptRoot 'prepare.py')
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+& $pythonExe (Join-Path $PSScriptRoot 'build_strategic.py')
 exit $LASTEXITCODE

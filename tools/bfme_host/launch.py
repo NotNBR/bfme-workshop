@@ -20,12 +20,16 @@ def main():
     parser.add_argument('--menu', action='store_true')
     parser.add_argument('--test', action='store_true')
     parser.add_argument('--zoom-check', action='store_true')
+    parser.add_argument('--strategic', action='store_true')
+    parser.add_argument('--strategic-check', action='store_true')
     parser.add_argument('--vanilla', action='store_true', help='Diagnostic run without the bfmeXbar mod')
     parser.add_argument('--dry-run', action='store_true')
     parser.add_argument('--map', default=r'maps\map mp tournament udun.map')
     args = parser.parse_args()
     if args.zoom_check:
         args.test = True
+    if args.strategic_check:
+        args.strategic = args.test = True
     manifest = ROOT / 'runtime/bfme-host/manifest.json'
     if not manifest.exists():
         parser.error('Run Setup bfmeXbar.cmd first.')
@@ -53,11 +57,20 @@ def main():
     sys.dont_write_bytecode = True
     sys.path.insert(0, str(reference))
     import game_smoke
+    if args.strategic_check:
+        import strategic_check
+        strategic_check.register(game_smoke)
     if args.zoom_check:
         import zoom_check
         zoom_check.register(game_smoke)
     if not args.vanilla:
         camera.register(game_smoke, config['zoomFactor'])
+        if args.strategic:
+            import strategic
+            extension=ROOT/'runtime/bfme-host/extension/bfmexbar-strategic.dll'
+            if not extension.is_file():
+                parser.error('Strategic extension is missing. Run Setup bfmeXbar.cmd first.')
+            strategic.register(game_smoke, extension)
     boot = game_smoke.boot_smoke
     # This installation's registry selects the Witch-king-named profile leaf,
     # even though the executable is BFME2. Seed the leaf the game actually uses.
@@ -87,6 +100,8 @@ def main():
         ])
         if args.zoom_check and status == 0:
             return zoom_check.validate(output)
+        if args.strategic_check:
+            return strategic_check.validate(output)
         return status
     running = game_smoke.other_games()
     if running:

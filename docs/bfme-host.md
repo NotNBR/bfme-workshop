@@ -24,7 +24,23 @@ Extending the permitted camera height alone exposed BFME2's separate rendering c
 
 ## Scope
 
-Eightfold zoom limits and fourfold multiplayer command-point ceilings are configured. Starting caps, production, resources, original units and animations are preserved. These changes are not a simulation scalability fix, nor a completed Supreme Commander engine splice. Strategic icons, improved strategic ordering and very large battle performance still need implementation and validation.
+Eightfold zoom limits and fourfold multiplayer command-point ceilings are configured. Starting caps, production, resources, original units and animations are preserved. Strategic camera/symbols are implemented as described below. These changes are not a simulation scalability fix, nor a completed Supreme Commander engine splice. Improved strategic ordering and very large battle performance still need implementation and validation.
+
+## Orthographic view and symbols
+
+`native/host/strategic.cpp` compiles to a project-local 32-bit DLL. The launcher loads it on the game's own main thread through the existing debug call helper. Three complete, fingerprinted instruction spans are intercepted: `W3DView::setCameraTransform` (RVA 0x8BE6B), `W3DView::getPickRay` (0x89658), and `DX8Wrapper::End_Scene` (0x122BE0). Original instructions run through trampolines, and disk binaries stay unchanged.
+
+Between heights 800 and 1400, a smoothstep based on camera height tilts the tactical camera overhead and fades in symbols. At 1400 the native camera switches to its orthographic projection. The orthographic plane matches the perspective plane's ground scale at the transition. Zooming in restores the original camera transform/projection. Only TheTacticalView is changed; other view instances and the cursor camera are excluded.
+
+Orthographic picking needs a separate correction: retail's getPickRay assumes all rays start at one camera point. The extension generates parallel rays through the corresponding orthographic-plane position. Native selection and order processing continue downstream. A diagnostic projects three points from those rays back through BFME2's own CameraClass::Project and measures the pixel error.
+
+Symbols are batched Direct3D9 triangles drawn before the engine finishes the scene. A D3D state block preserves/restores game rendering state. Owner-colored diamonds identify selectable units; roof-marked squares identify structures, including selectable construction plots. The overlay reads native world objects and does not replace them. The same hidden, hiddenByStealth and fullyObscuredByShroud flags used by Drawable::draw are checked. Objects belonging to another player additionally require clear/partly-clear native shroud status. No fog or stealth state is changed.
+
+The native palantir region is excluded from the symbol layer. Per-class artwork and dense-army icon clustering are future work. The extension currently activates in skirmish mode; campaign and multiplayer remain unvalidated.
+
+The first native regression passed all four states (300 perspective, 1100 transition, 2400 orthographic, 300 restored). At maximum height it rendered both unit and building symbols without D3D or native exceptions. Native projection/picking round-trip error was 0.000077 pixel, with exactly parallel orthographic rays. Final reports/screenshots are saved under `runtime/bfme-host/verification/strategic-*`.
+
+The final visibility-filtered build also passed on Grey Mountains: seven structure/plot symbols and two builder symbols were visible, 36 objects were excluded by visibility checks, and camera restoration passed. Picking error was below 0.000184 pixel. This validates projection and mouse-ray alignment; it is not a multiplayer or large-army performance benchmark.
 
 The stock map has finite boundaries: black space outside its edges and normal fog of war remain expected. Rendering the terrain at far zoom is distinct from expanding the playable map.
 

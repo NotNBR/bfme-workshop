@@ -22,7 +22,9 @@ The engine is downloaded as a separate ignored runtime. Its GPL source and licen
 
 ## openbfme2 and BFME II
 
-`D:\LAN\openbfme2` supplies read-only reconstruction and file-layout references. Its source notices remain in the original repository. `D:\LAN\bfme2` supplies the user's local game assets, extracted only into ignored local runtime files.
+`D:\LAN\openbfme2` supplies read-only reconstruction and file-layout references. Its source notices remain in the original repository. The original-host build uses the complete local game at `D:\LAN\lotrbfme2\local\bfme2`, copied only into ignored runtime files. The older Recoil importer used `D:\LAN\bfme2`.
+
+`native/host/strategic.cpp` uses the recovered BFME2 1.06 camera/object layouts, symbols and Drawable::draw visibility semantics. Runtime helpers are imported from openbfme2 without modifying its checkout. The compiler is the existing MSVC 7.1 toolchain in its reference checkout; the compiler is not redistributed by this project. Direct3D9 interface slots were cross-checked against the locally installed mingw-w64 `d3d9.h` declarations; that header is not copied into the project.
 
 ## Python dependencies
 
