@@ -217,10 +217,11 @@ static void strategicCamera(void *view) {
 static void __fastcall cameraHook(void *view,void*) {
     strategicCamera(view);
 }
+static void showcaseCamera(void *view);
 static void __fastcall updateHook(void *view,void*) {
     bool tactical=view==field<void*>(base,0x9FEA3C);
     if(tactical) traceCamera(view,0);
-    if(tactical && inMatch()) advanceCamera(view);
+    if(tactical && inMatch()) {showcaseCamera(view);advanceCamera(view);}
     U32 calls=bfxState.cameraCalls;
     ((CameraFn)updateOriginal)(view,0);
     // Native updates can skip setCameraTransform when no input has changed.
@@ -317,6 +318,7 @@ static void diamond(float x,float y,float r,U32 color) {
     tri(x,y-r,x+r,y,x,y+r,color);tri(x,y-r,x,y+r,x-r,y,color);
 }
 static U32 alpha(U32 color,float a) { return (color&0xffffff)|((U32)(255*a)<<24); }
+#include "symbols.inc"
 static bool symbolSelected(void *object) {
     // BFME selects the horde drawable; its individual soldiers are contained
     // objects. Follow the native containment chain so the whole battalion lights.
@@ -335,6 +337,7 @@ typedef HRESULT (__stdcall *ComStage)(void*,U32,U32,U32);
 static void renderSymbols() {
     bfxState.icons=bfxState.buildings=bfxState.units=bfxState.hiddenSkipped=0;
     bfxSymbols.selectedIcons=bfxSymbols.enemyIcons=0;
+    memset(bfxSymbolTypes.current,0,sizeof(bfxSymbolTypes.current));
     float fade=smooth((renderHeight-1400.0f)/600.0f);
     if(!activeView || !inMatch() || activeView!=field<void*>(base,0x9FEA3C) || fade<=0 || bfxState.faults) return;
     void *cam=field<void*>(activeView,0x104);
@@ -398,25 +401,22 @@ static void renderSymbols() {
         // BFME scales its palantir/control bar with the viewport dimensions.
         if(y>viewport.y+viewport.height*(1-260.0f/768) &&
            x<viewport.x+viewport.width*(400.0f/1024)) continue;
-        bool building=(field<U8>(tmpl,0x108)&0x80)!=0;
+        SymbolKind kind=symbolKind(obj,tmpl);
         bool selected=symbolSelected(obj);
         bool enemy=owner!=local && address<RelationshipFn>(0x2AD0C6)(local,0,field<void*>(obj,0x304))==0;
         U32 color=alpha(enemy?0xF04444:address<ColorFn>(0x28B026)(obj,0),fade);
         U32 white=alpha(0xF3E5BC,fade),dark=alpha(0x071018,fade);
         U32 border=alpha(selected?0xFFE45C:0xD0C6AD,fade);
-        float outer=selected?8.5f:7.5f,inner=selected?7.25f:6.0f;
         if(selected)bfxSymbols.selectedIcons++;
         if(enemy)bfxSymbols.enemyIcons++;
-        if(building) {
-            square(x,y,outer,dark);square(x,y,inner,border);square(x,y,4.5f,color);
-            tri(x-4,y-1.5f,x,y-5,x+4,y-1.5f,white);bfxState.buildings++;
-        } else {
-            diamond(x,y,outer,dark);diamond(x,y,inner,border);diamond(x,y,4.5f,color);
-            tri(x-1.5f,y+1.5f,x,y-1.5f,x+1.5f,y+1.5f,white);bfxState.units++;
-        }
+        tacticalSymbol(kind,x,y,selected,color,border,white,dark);
+        if(kind==BUILDING)bfxState.buildings++;else bfxState.units++;
         bfxState.icons++;
     }
     if(!trackedSymbol) symbolObject=0;
+    for(int kindIndex=0;kindIndex<SYMBOL_KINDS;kindIndex++)
+        if(bfxSymbolTypes.current[kindIndex]>bfxSymbolTypes.peak[kindIndex])
+            bfxSymbolTypes.peak[kindIndex]=bfxSymbolTypes.current[kindIndex];
     if(bfxSymbols.selectedIcons>bfxSymbols.peakSelectedIcons)bfxSymbols.peakSelectedIcons=bfxSymbols.selectedIcons;
     if(bfxSymbols.enemyIcons>bfxSymbols.peakEnemyIcons)bfxSymbols.peakEnemyIcons=bfxSymbols.enemyIcons;
     if(!vertexCount) return;
@@ -470,6 +470,7 @@ static void undoHook(U32 rva,void *trampoline,int length) {
     }
 }
 #include "battle.inc"
+#include "showcase.inc"
 
 BOOL WINAPI DllMain(HINSTANCE instance,DWORD reason,LPVOID) {
     if(reason!=DLL_PROCESS_ATTACH) return TRUE;

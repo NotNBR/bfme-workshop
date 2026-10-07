@@ -43,7 +43,7 @@ def read_state(game):
     return dict(zip(STATE_FIELDS,struct.unpack('<12I4f2I2f2I4f',data)))
 
 
-def register(smoke, dll, trace=False, battle=False):
+def register(smoke, dll, trace=False, battle=False, showcase=False):
     import pefile
     dll=Path(dll).resolve()
     pe=pefile.PE(str(dll))
@@ -51,6 +51,9 @@ def register(smoke, dll, trace=False, battle=False):
     probe_rva=next(e.address for e in pe.DIRECTORY_ENTRY_EXPORT.symbols if e.name==b'bfxProbe')
     trace_rva=next(e.address for e in pe.DIRECTORY_ENTRY_EXPORT.symbols if e.name==b'bfxTrace')
     symbols_rva=next(e.address for e in pe.DIRECTORY_ENTRY_EXPORT.symbols if e.name==b'bfxSymbols')
+    reserves_rva=next(e.address for e in pe.DIRECTORY_ENTRY_EXPORT.symbols if e.name==b'bfxReserveDebug')
+    showcase_rva=next(e.address for e in pe.DIRECTORY_ENTRY_EXPORT.symbols if e.name==b'bfxShowcase')
+    types_rva=next(e.address for e in pe.DIRECTORY_ENTRY_EXPORT.symbols if e.name==b'bfxSymbolTypes')
     battle_exports={key:next(e.address for e in pe.DIRECTORY_ENTRY_EXPORT.symbols if e.name==name)
                     for key,name in [('state',b'bfxBattleState'),('start',b'bfxStartBattle'),
                                      ('orders',b'bfxBattleOrders'),('probe',b'bfxBattleProbe')]}
@@ -77,6 +80,11 @@ def register(smoke, dll, trace=False, battle=False):
                 game.res['strategic_probe_address']=module+probe_rva
                 game.res['strategic_trace_address']=module+trace_rva
                 game.res['symbol_state_address']=module+symbols_rva
+                game.res['reserve_debug_address']=module+reserves_rva
+                game.res['symbol_types_address']=module+types_rva
+                if showcase:
+                    game.res['showcase_address']=module+showcase_rva
+                    game.write(module+showcase_rva,struct.pack('<I',1))
                 for key,rva in battle_exports.items():game.res['battle_'+key+'_address']=module+rva
                 game.res['strategic_initial']=read_state(game)
                 if not game.res['strategic_initial']['installed']:
@@ -87,6 +95,11 @@ def register(smoke, dll, trace=False, battle=False):
             def observe(game):
                 state=read_state(game)
                 if state:
+                    state['reserveDebug']=list(struct.unpack('<6I',game.read(game.res['reserve_debug_address'],24)))
+                    types=struct.unpack('<20I',game.read(game.res['symbol_types_address'],80))
+                    names=['building','infantry','archer','pike','cavalry','siege','monster','hero','builder','air']
+                    state['symbolTypes']=dict(zip(names,types[:10]))
+                    state['peakSymbolTypes']=dict(zip(names,types[10:]))
                     symbols=game.read(game.res['symbol_state_address'],32)
                     if symbols and len(symbols)==32:
                         state['symbols']=dict(zip(['samples','interpolatedPositions','betweenLogicMoves','logicMoves',
@@ -102,6 +115,9 @@ def register(smoke, dll, trace=False, battle=False):
                     import battle as preset
                     stopped=preset.tick(game,smoke)
                     if stopped:return stopped
+                if showcase:
+                    import showcase as recording
+                    recording.observe(game,smoke)
                 return tick(game) if tick else None
             trace_path=smoke.OUT/'camera-trace.csv'
             if trace:self.res['camera_trace_path']=str(trace_path)

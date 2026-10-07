@@ -17,6 +17,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 
 def main():
     parser = argparse.ArgumentParser()
+    parser.add_argument('--showcase', action='store_true', help='Record a directed 72-second gameplay video; requires imageio-ffmpeg')
     parser.add_argument('--window', action='store_true')
     parser.add_argument('--menu', action='store_true')
     parser.add_argument('--test', action='store_true')
@@ -29,6 +30,9 @@ def main():
     parser.add_argument('--map')
     parser.add_argument('--battle', choices=['orcs-elves'], help='Start a prepared Mordor-versus-Elves battalion battle')
     args = parser.parse_args()
+    if args.showcase:
+        args.battle='orcs-elves'
+        args.window=True
     args.map=args.map or (r'maps\map mp grey mountains.map' if args.battle else r'maps\map mp tournament udun.map')
     if args.battle and args.map.lower()!=r'maps\map mp grey mountains.map':
         parser.error('The prepared battle uses Grey Mountains; omit --map for this preset.')
@@ -50,7 +54,7 @@ def main():
     if args.vanilla:
         game_args = []
     if args.window or args.test:
-        game_args += ['-win', '-xres', '1920', '-yres', '1080']
+        game_args += ['-win', '-xres', '1920', '-yres', '1440']
     if not args.menu and not args.test:
         game_args += ['-file', args.map]
     print(subprocess.list2cmdline([str(game_dir / 'lotrbfme2.exe'), *game_args]), flush=True)
@@ -82,7 +86,7 @@ def main():
             extension=ROOT/'runtime/bfme-host/extension/bfmexbar-strategic.dll'
             if not extension.is_file():
                 parser.error('Strategic extension is missing. Run Setup bfmeXbar.cmd first.')
-            strategic.register(game_smoke, extension, trace=args.camera_trace or args.strategic_check,battle=bool(args.battle))
+            strategic.register(game_smoke, extension, trace=args.camera_trace or args.strategic_check,battle=bool(args.battle),showcase=args.showcase)
     boot = game_smoke.boot_smoke
     # This installation's registry selects the Witch-king-named profile leaf,
     # even though the executable is BFME2. Seed the leaf the game actually uses.
@@ -108,14 +112,14 @@ def main():
     profile = boot.prepare_sandbox_profile(appdata)
     options = profile / 'Options.ini'
     text = options.read_text()
-    text, replaced = re.subn(r'(?m)^Resolution\s*=.*$', 'Resolution = 1920 1080', text)
-    if not replaced:text += '\nResolution = 1920 1080\n'
+    text, replaced = re.subn(r'(?m)^Resolution\s*=.*$', 'Resolution = 1920 1440', text)
+    if not replaced:text += '\nResolution = 1920 1440\n'
     options.write_text(text)
     if args.test:
         status = game_smoke.main([
             'skirmish', '--game-dir', str(game_dir), '--retail', '--appdata', str(appdata),
             '--args', subprocess.list2cmdline(game_args), '--map', args.map, '--player',
-            '--seconds', '30', '--min-frames', '100', '--timeout', '180',
+            '--seconds', '55' if args.battle else '30', '--min-frames', '100', '--timeout', '180',
             '--guard', config['game'],
         ])
         if args.zoom_check and status == 0:

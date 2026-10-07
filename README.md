@@ -11,11 +11,11 @@ Double-click **Launch bfmeXbar.cmd**. The launcher uses the `openbfme2` compatib
 .\tools\bfme_host\start.ps1 -Window -Menu
 ```
 
-For a prepared battle, use **Launch Orcs vs Elves.cmd** (or `start.ps1 -Window -Battle orcs-elves`). It starts Grey Mountains with you as Mordor against an Elven AI and places 16 Orc battalions opposite five Lorien Warrior and five Lorien Archer battalions. Both armies receive an initial attack-move order; you can take control afterward.
+For a prepared battle, use **Launch Orcs vs Elves.cmd** (or `start.ps1 -Window -Battle orcs-elves`). Grey Mountains opens with Mordor and Elven troops fighting in the central valley. Both sides have their original fortress plus eight resource, production and defensive buildings. The map is fully revealed. Twelve Mordor and eight Elven battalions open the battle; ten Mordor and four Elven reserve battalions march from their bases in four staggered groups. The Witch-king and Mouth of Sauron lead Mordor; Haldir and Glorfindel lead the Elves. All four heroes join the opening fight. The armies use native movement, formations and combat, and remain controllable.
 
 The default entry point is now BFME2. Earlier Recoil and browser experiments are retained as reference code.
 
-The launcher uses Full HD (1920 × 1080). Zoom out with the mouse wheel. Between camera heights 800 and 2,600 the view smoothly tilts overhead. Above 2,600 it settles into true orthographic projection. Symbols fade in separately between heights 1,400 and 2,000, and follow the native interpolated render positions every frame. The tilt responds every frame, and health bars shrink to compact widths at strategic distances. Units use compact diamonds and buildings use squares with a roof mark. Enemies are red; other units retain their owner color. Selected units have a brighter, thicker gold border, including every member of a selected battalion. Zooming back in restores the native perspective and removes the symbols. Native hidden, stealth and shroud checks exclude unseen objects.
+The launcher uses 1920 × 1440 with the original 4:3 aspect ratio. Zoom out with the mouse wheel; the Grey Mountains ceiling is now 7,200 (24x the original limit). Between camera heights 800 and 2,600 the view smoothly tilts overhead. Above 2,600 it settles into true orthographic projection. Symbols fade in separately between heights 1,400 and 2,000, and follow the native interpolated render positions every frame. The tilt responds every frame, and health bars shrink to compact widths at strategic distances. Symbols distinguish infantry, archers, pikes, cavalry, siege, monsters, heroes, builders and flying units. All buildings share one house-shaped symbol. Heroes use stars that are 40% larger than the other symbol classes. All symbol contours and glyphs are 12% larger than the previous version. Enemies are red; other units retain their owner color. Selected units have a brighter, thicker gold border, including every member of a selected battalion. Zooming back in restores the native perspective and removes the symbols. Native hidden, stealth and shroud checks exclude unseen objects.
 
 Selection, box selection, the cursor and orders still run through BFME2. Orthographic picking uses parallel rays so screen positions remain aligned with the battlefield. To start without this extension, use `start.ps1 -Window -NoStrategic`.
 
@@ -24,7 +24,7 @@ Selection, box selection, the cursor and orders still run through BFME2. Orthogr
 Run **Setup bfmeXbar.cmd**. On this machine it reads the complete installation at `D:\LAN\lotrbfme2\local\bfme2` and uses the adjacent `D:\LAN\openbfme2\tools` launch helpers. The previously used `D:\LAN\bfme2` directory lacked the APT menu assets.
 
 ```powershell
-.\tools\bfme_host\setup.ps1 -BfmePath 'D:\LAN\lotrbfme2\local\bfme2' -ZoomFactor 16 -ArmyFactor 4
+.\tools\bfme_host\setup.ps1 -BfmePath 'D:\LAN\lotrbfme2\local\bfme2' -ZoomFactor 24 -ArmyFactor 4
 ```
 
 Setup creates a project Python environment, installs the pinned dependencies, copies the complete game into `runtime/bfme-host/game`, and builds a local mod. This needs roughly 5 GB of disk space. Proprietary game files, generated mods, profiles and logs remain ignored by Git. The original installation and `openbfme2` source are read only.
@@ -36,10 +36,10 @@ The launcher checks the exact BFME2 1.06 binary hash before using the recovered 
 ## Current changes and limits
 
 - Original unit definitions, animation assets, horde logic, locomotors and cursor resources are preserved.
-- Camera maximum height is multiplied by sixteen in supported stock multiplayer/War of the Ring map metadata. All other decompressed map bytes are checked unchanged. Maps without an explicit limit inherit the global setting.
+- Camera maximum height is multiplied by twenty-four in supported stock multiplayer/War of the Ring map metadata. All other decompressed map bytes are checked unchanged. Maps without an explicit limit inherit the global setting.
 - The native world camera's far clipping distance is extended to match. This is a version-checked in-memory change; the original executable file stays unchanged.
 - Maximum multiplayer command points are multiplied by four; starting command points stay unchanged. This raises the ceiling, not the starting army size. Normal recruitment and resource rules still apply.
-- Strategic symbols currently distinguish units and buildings, including selectable building plots. Per-unit-class icons, strategic order overlays, simulation scaling, and a Forged Alliance runtime splice are not implemented. A larger configured cap is not proof of large-battle performance.
+- Strategic symbols distinguish broad unit roles and use one common building icon, including selectable building plots. Dense-army icon clustering, strategic order overlays, simulation scaling, and a Forged Alliance runtime splice are not implemented. A larger configured cap is not proof of large-battle performance.
 - Multiplayer compatibility and long matches have not been validated. The current launcher is for local play.
 
 ## Verification
@@ -64,3 +64,9 @@ The runtime check requires actual skirmish mode, at least 100 advancing simulati
 - `legacy/browser/`: archived browser prototype, also preserved at Git tag `browser-prototype`.
 
 See [the host integration notes](docs/bfme-host.md) and [earlier engine research](docs/native-integration.md). Original game assets are not distributed in this repository.
+
+## Gameplay showcase
+
+`python tools/bfme_host/launch.py --showcase` starts the prepared battle and records a 72-second camera tour at 1920 x 1440 / 30 fps. Install the optional recording dependency with `pip install imageio-ffmpeg==0.6.0`. It records the game window only, without audio. The camera returns to player control after 74 seconds; ordinary launches never enable the tour. The raw recording and diagnostics are saved in `artifacts/showcase/`.
+
+Run `python tools/bfme_host/finish_showcase.py` after the recorder finishes to add feature captions and export `artifacts/showcase/bfmeXbar-gameplay-showcase.mp4`. The completed showcase is 72 seconds of continuous gameplay at 30 fps, with no audio.

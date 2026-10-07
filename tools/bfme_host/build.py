@@ -29,7 +29,7 @@ def command_limits(text,factor):
 def main():
     p=argparse.ArgumentParser()
     p.add_argument('--bfme',type=pathlib.Path,default=ROOT.parent/'lotrbfme2'/'local'/'bfme2')
-    p.add_argument('--zoom-factor',type=float,default=16)
+    p.add_argument('--zoom-factor',type=float,default=24)
     p.add_argument('--army-factor',type=float,default=4)
     args=p.parse_args()
     if not 1<=args.zoom_factor<=24 or not 1<=args.army_factor<=10:

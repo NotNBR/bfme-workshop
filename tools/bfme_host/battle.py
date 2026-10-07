@@ -27,8 +27,11 @@ def register(smoke,mod,test=False):
 def read_battle(game):
     address=game.res.get('battle_state_address')
     if not address:return None
-    return dict(zip(['stage','orcs','elves','orders','error','orcPlayer','elfPlayer','aliveOrcs','aliveElves','x','y','z'],
-                    struct.unpack('<9I3f',game.read(address,48))))
+    return dict(zip(['stage','orcs','elves','orders','error','orcPlayer','elfPlayer','aliveOrcs','aliveElves','x','y','z',
+                     'fogDisabled','orcBuildings','elfBuildings','completeBuildings','unitsMoved','enemyVerified',
+                     'waves','reinforcementOrcs','reinforcementElves','openingCasualties','reinforcementsMoved','earlyCasualties',
+                     'orcHeroes','elfHeroes','heroOrders','aliveHeroes'],
+                    struct.unpack('<9I3f16I',game.read(address,112))))
 
 
 def tick(game,smoke):
@@ -55,12 +58,12 @@ def tick(game,smoke):
         game.arm('GameEngine::update',select_horde)
         game.res['battle_selection_requested']=True
         return  # one native call per tick; the probe uses the same breakpoint
-    if frame>=10 and not game.res.get('battle_spawn_requested'):
+    if frame>=1 and not game.res.get('battle_spawn_requested'):
         game.arm('GameEngine::update',lambda g,t,c:{'call':g.res['battle_start_address'],'ecx':0})
         game.res['battle_spawn_requested']=frame
     elif state['stage']==2 and frame>=game.res['battle_spawn_requested']+10:
         game.arm('GameEngine::update',lambda g,t,c:{'call':g.res['battle_orders_address'],'ecx':0})
-    elif state['stage']==3 and frame>=game.res.get('battle_probe_frame',0)+25:
+    elif state['stage']==3 and frame>=game.res.get('battle_probe_frame',0)+5:
         game.arm('GameEngine::update',lambda g,t,c:{'call':g.res['battle_probe_address'],'ecx':0})
         game.res['battle_probe_frame']=frame
     if frame>=35 and state['stage']==3 and not game.res.get('battle_screenshot'):
@@ -72,10 +75,16 @@ def validate(output):
     state=report['run'].get('battle',{})
     failures=[]
     if report['outcome']!='pass':failures.append(report['outcome'])
-    for key,expected in [('stage',3),('orcs',16),('elves',10),('orders',26),('error',0)]:
+    for key,expected in [('stage',3),('orcs',22),('elves',12),('orders',34),('error',0),
+                         ('fogDisabled',1),('orcBuildings',8),('elfBuildings',8),
+                         ('completeBuildings',16),('enemyVerified',1),('waves',4),
+                         ('reinforcementOrcs',10),('reinforcementElves',4),
+                         ('orcHeroes',2),('elfHeroes',2),('heroOrders',4)]:
         if state.get(key)!=expected:failures.append(f'{key}: expected {expected}, got {state.get(key)}')
     alive=state.get('aliveOrcs',0)+state.get('aliveElves',0)
-    if not 0<alive<26:failures.append('No surviving battle with confirmed battalion casualties')
+    if not 0<alive<=34:failures.append('No surviving armies')
+    if state.get('earlyCasualties',0)<1:failures.append('Opening armies did not fight before reinforcements')
+    if state.get('reinforcementsMoved',0)<8:failures.append('Reserves did not march in from their bases')
     symbols=report['run'].get('strategic',{}).get('symbols',{})
     if symbols.get('betweenLogicMoves',0)<10:
         failures.append('Symbols did not move between native simulation ticks')
@@ -83,8 +92,11 @@ def validate(output):
         failures.append('Selected battalion members were not highlighted')
     if symbols.get('peakEnemyIcons',0)<10:
         failures.append('Enemy symbols were not colored red')
+    types=report['run'].get('strategic',{}).get('peakSymbolTypes',{})
+    for kind,minimum in [('building',16),('infantry',20),('archer',20),('pike',20),('hero',4)]:
+        if types.get(kind,0)<minimum:failures.append(f'Missing tactical symbols for {kind}')
     result={'outcome':'fail' if failures else 'pass','failures':failures,'battle':state,
-            'symbols':symbols,'first_chance':report['run'].get('first_chance'),
+            'symbols':symbols,'peakSymbolTypes':types,'first_chance':report['run'].get('first_chance'),
             'screenshot':report['run'].get('battle_screenshot')}
     (output/'battle-regression.json').write_text(json.dumps(result,indent=2)+'\n')
     print(json.dumps(result,indent=2))
