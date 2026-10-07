@@ -99,3 +99,11 @@ The Full HD battle check passed with a captured 1920 × 1080 client, selected bat
 The opening battle also includes native MordorWitchKing, MordorMouthOfSauron, ElvenHaldir and ElvenGlorfindel objects, two heroes per faction. They start just behind their infantry and receive one native attack-move order each. Heroes have separate spawn, order and survival counters; they are not included in the 34 battalion count. Symbol-type counters verify that all four heroes render as stars.
 
 The latest scenario check exercises 34 battalions, 16 completed base buildings, four heroes and all four reinforcement releases. It also checks opening casualties before reserves, reserve movement, role-specific symbols, selected borders, enemy colors and interpolated symbol positions. Screenshots use 1920 x 1440. Evidence is saved under `artifacts/bfme-host/scenario/`.
+
+## Veterancy marker scaling and short showcase
+
+Retail Drawable's veterancy renderer at RVA 0x277DB4 divides pip dimensions by View::getZoom. That value is normalized against the map camera ceiling, so the extended limit magnified rank markers into large orange squares. The extension redirects only the verified six-byte zoom-getter call at 0x277E23 to a measured-height scale (height/300, bounded to 1..2). Original rank images, ranks, visibility, world anchors and the global zoom getter are preserved. The bfxPipScale export records call counts and both scales.
+
+The optional showcase now records 29 seconds. A gentle 95-unit pan and 0.18-radian arc returns to the captured initial bearing and battle center by second 7. The camera pauses before zooming from height 600 to 2600 (seconds 8..13), holds, zooms to 7200 (15..20), holds, then returns to 600 (22..28). All segments ease in and out. The recorder starts about one second into the camera lead-in; camera control returns at second 30. Per-second camera height, bearing and native diagnostics are saved to artifacts/showcase/timeline.jsonl.
+
+The current launcher uses a smaller 1600 x 1200 (4:3) client. The 29-second showcase exports at that size without added captions; native game UI remains visible. Earlier validation captures retain their original resolutions.

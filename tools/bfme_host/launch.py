@@ -17,7 +17,7 @@ ROOT = pathlib.Path(__file__).resolve().parents[2]
 
 def main():
     parser = argparse.ArgumentParser()
-    parser.add_argument('--showcase', action='store_true', help='Record a directed 72-second gameplay video; requires imageio-ffmpeg')
+    parser.add_argument('--showcase', action='store_true', help='Record a directed 29-second gameplay video; requires imageio-ffmpeg')
     parser.add_argument('--window', action='store_true')
     parser.add_argument('--menu', action='store_true')
     parser.add_argument('--test', action='store_true')
@@ -54,7 +54,7 @@ def main():
     if args.vanilla:
         game_args = []
     if args.window or args.test:
-        game_args += ['-win', '-xres', '1920', '-yres', '1440']
+        game_args += ['-win', '-xres', '1600', '-yres', '1200']
     if not args.menu and not args.test:
         game_args += ['-file', args.map]
     print(subprocess.list2cmdline([str(game_dir / 'lotrbfme2.exe'), *game_args]), flush=True)
@@ -112,8 +112,8 @@ def main():
     profile = boot.prepare_sandbox_profile(appdata)
     options = profile / 'Options.ini'
     text = options.read_text()
-    text, replaced = re.subn(r'(?m)^Resolution\s*=.*$', 'Resolution = 1920 1440', text)
-    if not replaced:text += '\nResolution = 1920 1440\n'
+    text, replaced = re.subn(r'(?m)^Resolution\s*=.*$', 'Resolution = 1600 1200', text)
+    if not replaced:text += '\nResolution = 1600 1200\n'
     options.write_text(text)
     if args.test:
         status = game_smoke.main([

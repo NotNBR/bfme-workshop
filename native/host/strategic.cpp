@@ -251,6 +251,19 @@ static void scaleHealth(void *drawable) {
     bfxState.healthCalls++;
     bfxState.nativeBarWidth=(float)width;bfxState.scaledBarWidth=(float)newWidth;
 }
+// Retail veterancy markers use 1/getZoom(), whose denominator changes with
+// the map zoom ceiling. Normalize only this draw call against actual height.
+struct PipScaleState { U32 calls;float nativeZoom,correctedZoom; };
+extern "C" __declspec(dllexport) PipScaleState bfxPipScale = {0};
+static float __fastcall veterancyZoom(void *view,void*) {
+    float original=field<float>(view,0xA8)*field<float>(view,0x3C);
+    if(!inMatch()||!filterReady||renderHeight<=0)return original;
+    float zoom=renderHeight/300.0f;
+    if(zoom<1)zoom=1;
+    if(zoom>2)zoom=2; // retain readable native rank pips at strategic distances
+    bfxPipScale.calls++;bfxPipScale.nativeZoom=original;bfxPipScale.correctedZoom=zoom;
+    return zoom;
+}
 typedef void (__fastcall *QueueFn)(void*,void*,int,void*);
 static void __fastcall healthHook(void *client,void*,int kind,void *drawable) {
     // Queue 0 follows a freshly calculated health rectangle. Hooking the whole
@@ -483,9 +496,10 @@ BOOL WINAPI DllMain(HINSTANCE instance,DWORD reason,LPVOID) {
     const U8 endBytes[]={0x64,0xa1,0,0,0,0};
     const U8 updateBytes[]={0x81,0xc1,0xb4,0,0,0};
     const U8 healthBytes[]={0x8d,0x44,0x24,0x08,0x50};
+    const U8 pipBytes[]={0xff,0x90,0x24,0x01,0,0};
     if(base!=(U8*)0x400000||memcmp(base+0x8BE6B,cameraBytes,5)||
        memcmp(base+0x89658,pickBytes,6)||memcmp(base+0x122BE0,endBytes,6)||
-       memcmp(base+0x85B36,updateBytes,6)||memcmp(base+0x239FCC,healthBytes,5)) return FALSE;
+       memcmp(base+0x85B36,updateBytes,6)||memcmp(base+0x239FCC,healthBytes,5)||memcmp(base+0x277E23,pipBytes,6)) return FALSE;
     cameraOriginal=hook(0x8BE6B,cameraHook,cameraBytes,5);
     pickOriginal=hook(0x89658,pickHook,pickBytes,6);
     endOriginal=hook(0x122BE0,endHook,endBytes,6);
@@ -499,6 +513,16 @@ BOOL WINAPI DllMain(HINSTANCE instance,DWORD reason,LPVOID) {
         undoHook(0x239FCC,healthOriginal,5);
         return FALSE;
     }
+    // Replace only Drawable's veterancy zoom getter, preserving global zoom.
+    // Verified native indirect call: ff 90 24 01 00 00 at RVA 0x277E23.
+    U8 *pipCall=base+0x277E23;DWORD pipOld;
+    if(!VirtualProtect(pipCall,6,PAGE_EXECUTE_READWRITE,&pipOld)) {
+        undoHook(0x8BE6B,cameraOriginal,5);undoHook(0x89658,pickOriginal,6);
+        undoHook(0x122BE0,endOriginal,6);undoHook(0x85B36,updateOriginal,6);
+        undoHook(0x239FCC,healthOriginal,5);return FALSE;
+    }
+    pipCall[0]=0xe8;*(U32*)(pipCall+1)=(U32)veterancyZoom-(U32)(pipCall+5);pipCall[5]=0x90;
+    VirtualProtect(pipCall,6,pipOld,&pipOld);FlushInstructionCache(GetCurrentProcess(),pipCall,6);
     bfxState.installed=1;
     return TRUE;
 }

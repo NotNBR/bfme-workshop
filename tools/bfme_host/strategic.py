@@ -52,6 +52,7 @@ def register(smoke, dll, trace=False, battle=False, showcase=False):
     trace_rva=next(e.address for e in pe.DIRECTORY_ENTRY_EXPORT.symbols if e.name==b'bfxTrace')
     symbols_rva=next(e.address for e in pe.DIRECTORY_ENTRY_EXPORT.symbols if e.name==b'bfxSymbols')
     reserves_rva=next(e.address for e in pe.DIRECTORY_ENTRY_EXPORT.symbols if e.name==b'bfxReserveDebug')
+    pips_rva=next(e.address for e in pe.DIRECTORY_ENTRY_EXPORT.symbols if e.name==b'bfxPipScale')
     showcase_rva=next(e.address for e in pe.DIRECTORY_ENTRY_EXPORT.symbols if e.name==b'bfxShowcase')
     types_rva=next(e.address for e in pe.DIRECTORY_ENTRY_EXPORT.symbols if e.name==b'bfxSymbolTypes')
     battle_exports={key:next(e.address for e in pe.DIRECTORY_ENTRY_EXPORT.symbols if e.name==name)
@@ -82,6 +83,7 @@ def register(smoke, dll, trace=False, battle=False, showcase=False):
                 game.res['symbol_state_address']=module+symbols_rva
                 game.res['reserve_debug_address']=module+reserves_rva
                 game.res['symbol_types_address']=module+types_rva
+                game.res['pip_scale_address']=module+pips_rva
                 if showcase:
                     game.res['showcase_address']=module+showcase_rva
                     game.write(module+showcase_rva,struct.pack('<I',1))
@@ -95,6 +97,7 @@ def register(smoke, dll, trace=False, battle=False, showcase=False):
             def observe(game):
                 state=read_state(game)
                 if state:
+                    state['veterancyPips']=dict(zip(['calls','nativeZoom','correctedZoom'],struct.unpack('<I2f',game.read(game.res['pip_scale_address'],12))))
                     state['reserveDebug']=list(struct.unpack('<6I',game.read(game.res['reserve_debug_address'],24)))
                     types=struct.unpack('<20I',game.read(game.res['symbol_types_address'],80))
                     names=['building','infantry','archer','pike','cavalry','siege','monster','hero','builder','air']
