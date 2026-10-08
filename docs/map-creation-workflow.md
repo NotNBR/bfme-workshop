@@ -26,13 +26,12 @@ Its engine defaults are document infrastructure, not an inherited landscape.
 Record the initial empty state before adding starts, water, scenery or gameplay
 objects. Add required starts and player settings in a separate functional pass.
 
-**Current limitation:** our tools edit existing native documents; they do not yet
-implement a verified blank-map constructor. Earlier WorldBuilder UI attempts could
-not initialize the computer-use helper. Recheck editor access at the beginning of
-the next production run. If it is unavailable, finish the brief and composition
-studies, and report the blank-native-document step as blocked. Do not silently
-substitute Ithilien or another stock map. A programmatic blank constructor is a
-separate implementation task that must pass editor and native-game checks first.
+**Current capability:** `tools.worldbuilder.blank` constructs a new native document
+without loading a donor map. Empty, functional and sculpted Ashen March checkpoints
+have passed native BFME2 loading/rendering checks. WorldBuilder open/save remains
+unverified because its control helper could not initialize. Keep that editor gate
+explicitly unverified; do not substitute a stock map or describe native rendering
+as an editor round trip.
 
 ## The painting principle
 
@@ -153,6 +152,15 @@ clearly, useful lowlands remain, and elevation contributes to the intended play.
 Add saddles, spurs, gullies, river terraces and local shoulders that belong to the
 large forms. Build secondary forms at a smaller scale; reserve tiny noise for late
 surface variation. Random bumps are not a substitute for connected terrain.
+
+For procedural assistance, retain the designed masses and warp their coordinates
+with independent low-frequency noise fields. Add rotated fBm octaves for secondary
+relief and restrained ridged noise for smaller folds. Apply thermal erosion to
+relax oversteep slopes, then regrade routes and bases. Use a fixed seed and inspect
+before/after height sections; noise amplitude must not erase the composition.
+The original operators in `tools.worldbuilder.earth` implement this sequence's
+building blocks. They do not simulate rivers or hydraulic sediment transport.
+See the [algorithm research and measured example](ashen-march-format-findings.md#open-algorithm-research).
 
 Place drainage through the low ground, then set water levels, banks and crossings.
 Review the entire stream profile. Changes in water height require a deliberately
@@ -323,16 +331,16 @@ artifacts/<map-id>/               editor/native evidence and diagnostic reports
 
 | Step | Current support | Required boundary |
 |---|---|---|
-| Brand-new native document | No verified constructor in this repo | Create through an available WorldBuilder session and prove the empty state |
+| Brand-new native document | `tools.worldbuilder.blank`; native-tested by Ashen March | Preserve the empty checkpoint; editor open/save is still unverified |
 | Native inspection and chunk diffs | `tools.worldbuilder.cli` and `analyze` | Lossless parsing does not prove engine semantics |
 | Checkpoints and seeded bulk edits | `checkout`, `apply`, `checkpoint`, `diff` | An existing file is required; for this workflow that must be the new blank document |
 | Raising and flattening terrain | Recipe operations | Broad brushes are tools, not a finished terrain design |
-| Base texture painting | Recipe operation | Finished blend edges still need editor work or a separately verified blend authoring tool |
-| Asset placement | Existing unnamed prototypes in the working map | A blank map has none: place chosen prototypes through the editor first, or implement and verify a separate asset-catalog path |
+| Base texture painting | Recipe operation; blank constructor writes palette and cardinal blends | Full corner/three-way WorldBuilder blending is not implemented |
+| Asset placement | Prototype recipes or explicit records through `blank.add_object` | Validate template names against native Object/ChildObject/ObjectReskin declarations and inspect real model footprints |
 | New water, roads, starts and scripts | No general authoring recipe API here | Author through the editor; do not reuse the Ithilien resize path as a blank-map builder |
 | Registration and scenarios | Current helpers contain map-specific values | Parameterize/test for the new map; `ithilien.cache_entry` and `--battle` are not generic |
 | Native launch | `launch.py --map` accepts a short virtual map path | Install/register the candidate in the isolated mod first |
-| Automated gallery and 8K capture | Existing helpers target Ithilien | Configure new map bounds and shot positions before use; current `--map-check` and `--map-photo` override the map |
+| Automated gallery and 8K capture | `--map-check` and `--map-photo` accept `--map-tour` JSON | Configure focus, shots, output and map hash; standalone `map_gallery.py` still targets Ithilien |
 | WorldBuilder UI automation | Adapter exists; previous connection failed | Inspect current tool availability and actual editor state before claiming a UI pass |
 
 After creating the **new blank document**, these are supported commands, run from

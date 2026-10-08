@@ -17,6 +17,7 @@ from PIL import Image, ImageDraw
 from .blank import create, starts, set_heights, set_materials, add_object
 from .format import Map, sha
 from .ithilien import cache_entry
+from .earth import fbm, gradient_noise, thermal_erosion
 
 ROOT=Path(__file__).resolve().parents[2]
 NAME='map mp bfmexbar ashen march'
@@ -26,8 +27,8 @@ STARTS=[(1650,1700),(6750,7800)]
 ROUTES=[[(1650,1700),(2800,2800),(3550,4050),(4450,5300),(5400,6650),(6750,7800)],
         [(1650,1700),(1950,3400),(1950,5150),(3100,6800),(4800,7800),(6750,7800)],
         [(1650,1700),(3550,2100),(5650,3300),(6600,5050),(6950,6500),(6750,7800)]]
-PALETTE=['DirtMordor03','DirtMordor16','DirtMordor17','RockMordor02',
-         'CliffMordor01','RockMordor06','DirtMordor09','DirtMordor11','RockMordor07']
+PALETTE=['DirtMordor09','DirtMordor11','DirtMordor18','RockMordor06',
+         'CliffMordor02','RockMordor02','DirtMordor09','DirtMordor17','RockMordor07']
 
 
 def smooth(a,b,x):
@@ -66,7 +67,11 @@ def route_field(x,y,points,levels=None):
 def terrain(variant=1):
     yy,xx=np.indices((1010,900));x=(xx-30)*10.;y=(yy-30)*10.
     broad=noise(x.shape,150,33);mid=noise(x.shape,48,34);fine=noise(x.shape,14,35)
-    z=105+22*broad+8*mid
+    warp_x=fbm(x,y,1450,701,3)*420
+    warp_y=fbm(x,y,1350,811,3)*420
+    wx,wy=x+warp_x,y+warp_y
+    natural=fbm(wx,wy,800,901,4)
+    z=105+24*broad+18*natural+8*mid
     # Long asymmetric spurs, not isolated circular cones. The ends overlap to
     # produce a broken mountain wall; passes are carved in a separate pass.
     ridges=[(400,4800,950,3100,-.17,820),(1350,7300,700,2400,.53,1050),
@@ -77,13 +82,17 @@ def terrain(variant=1):
     if variant==2:ridges=ridges[:5]+[(4200,4700,550,3000,1.05,650)]
     hills=np.zeros_like(z)
     for cx,cy,sx,sy,angle,height in ridges:
-        dx=x-cx+55*mid;dy=y-cy+45*broad;c,s=math.cos(angle),math.sin(angle)
+        dx=wx-cx;dy=wy-cy;c,s=math.cos(angle),math.sin(angle)
         u=(dx*c+dy*s)/sx;v=(-dx*s+dy*c)/sy
         mass=height*np.exp(-1.5*(u*u+v*v))
         hills=np.maximum(hills,mass)
-    z+=hills*(1+.10*mid+.045*fine)
-    # Eroded grooves grow on the mountains but disappear across army ground.
-    z-=np.maximum(0,mid+.20*fine)*70*smooth(130,550,hills)
+    ridge=1-np.abs(gradient_noise(wx+110,wy-240,440,933))
+    z+=hills*(.73+.28*ridge+.32*natural)
+    # Branching bands cut irregular rock shoulders; smaller octaves roughen
+    # these cuts without adding arbitrary spikes to the fighting ground.
+    z-=np.maximum(0,.45-ridge)*170*smooth(100,450,hills)
+    z+=smooth(80,500,hills)*(52*fbm(wx,wy,240,1071,3)+14*fine)
+    z=thermal_erosion(z)
     route_levels=[[105,118,140,160,155,130],[105,175,235,260,190,130],[105,110,90,112,130,130]]
     dists=[]
     for i,(route,levels) in enumerate(zip(ROUTES,route_levels)):
@@ -143,15 +152,22 @@ def checkpoint(m,name,notes):
 def materials(x,y,z,dists,broad,mid,fine):
     dy,dx=np.gradient(z,10);slope=np.hypot(dx,dy)
     labels=np.zeros(z.shape,dtype='u2')
-    labels[broad+.38*mid>.22]=1
-    labels[(mid>.35)&(z<220)]=2
-    labels[(z>240)&(mid>-.45)]=3
+    # Several natural patch scales interrupt the old kilometre-wide sheets of
+    # the same high-contrast 80-unit repeat. Quiet dirt carries open ground.
+    patches=fbm(x+110*mid,y+100*broad,230,1301,3)
+    labels[patches+.15*mid>.06]=1
+    labels[(patches<-.12)&(z<280)]=2
+    labels[(z>240)&(patches>-.12)]=3
     labels[slope>.55]=4
-    labels[(slope>.32)&(mid>.22)]=5
+    labels[(slope>.32)&(patches>.10)]=5
     # Wide material masses, then road wear and pockets of exhausted scrub.
     road=np.minimum.reduce(dists)
-    labels[(road<48+18*mid+12*fine)&(slope<.32)]=6
-    grove=np.exp(-((x-5950)/950)**2-((y-4300)/1200)**2)
+    labels[(road<25+18*mid+16*fine)&(patches>-.13)&(slope<.32)]=6
+    grove=np.zeros_like(x)
+    for cx,cy,sx,sy in [(5950,4300,950,1200),(2450,6400,720,1250),
+                         (4200,7550,1150,650),(4050,2200,1300,700),
+                         (1150,3900,750,1100),(7300,6900,650,700)]:
+        grove=np.maximum(grove,np.exp(-((x-cx)/sx)**2-((y-cy)/sy)**2))
     labels[(grove+.25*mid>.56)&(road>280)&(slope<.32)]=7
     watch=np.hypot(x-3050,y-5520)
     labels[(watch<240+30*mid)&(slope<.2)]=8
@@ -168,7 +184,8 @@ def decorate(m,x,y,z,slope,road,grove,polish=False):
         if not 15<px<8385 or not 15<py<9485:return False
         if protect and (road[iy,ix]<210 or any(math.hypot(px-a,py-b)<790 for a,b in STARTS)):
             return False
-        cell=(int(px//100),int(py//100));n=math.ceil(gap/100)
+        if layer in ('AbandonedHamlets','OldWalls') and slope[iy,ix]>.25:return False
+        cell=(int(px//100),int(py//100));n=max(2,math.ceil(gap/100))
         for cy in range(cell[1]-n,cell[1]+n+1):
             for cx in range(cell[0]-n,cell[0]+n+1):
                 if any(math.hypot(px-a,py-b)<max(gap,g) for a,b,g in occupied.get((cx,cy),[])):return False
@@ -187,21 +204,35 @@ def decorate(m,x,y,z,slope,road,grove,polish=False):
                          ('FireBonfire',3050,5480,0)]:
         put(tpl,px,py,a,'FallenWatch',gap=35,protect=False)
     # Distinct abandoned roadside settlements, aligned to their old streets.
-    for cx,cy,angle in [(2550,3190,.6),(5020,6590,.7),(6400,5980,-.2)]:
-        for i,(ox,oy) in enumerate([(-140,150),(110,180),(-190,-50),(190,-120)]):
+    for cx,cy,angle in [(2550,3190,.6),(5020,6590,.7),(6400,5980,-.2),
+                         (3400,7450,.4),(4750,2650,-.5),(2050,5750,.9)]:
+        plots=[(a,b) for a in (-285,-140,150,295) for b in (-225,-60,110,265)]
+        for i,(ox,oy) in enumerate(plots):
             px=cx+ox*math.cos(angle)-oy*math.sin(angle);py=cy+ox*math.sin(angle)+oy*math.cos(angle)
-            put(['OsgiliathRuin06','OsgiliathRuin08','OsgiliathRuin24','OsgiliathRuin22'][i],px,py,angle,'AbandonedHamlets',gap=100)
+            put(['OsgiliathRuin01','OsgiliathRuin02','OsgiliathRuin06','OsgiliathRuin21b','OsgiliathRuin24'][i%5],px,py,angle+rng.uniform(-.13,.13),'AbandonedHamlets',gap=75)
         put('FireCampfire',cx+45,cy+30,0,'AbandonedHamlets',gap=35)
+        for _ in range(28):
+            px=cx+rng.uniform(-340,340);py=cy+rng.uniform(-310,310)
+            put(rng.choice(['CartWreck','CartWheel','Barrel','Crate01','MoriaRubble01','MoriaRubble02']),
+                px,py,angle+rng.uniform(-.7,.7),'SettlementDebris',gap=22)
+    # Collapsed boundaries and old causeway remnants give the open approaches
+    # human history, with deliberate breaches where the army paths cross.
+    for cx,cy,angle in [(3700,3200,.8),(4400,6150,.9),(3150,7000,-.4)]:
+        for j in range(-6,7):
+            if j in (-1,0,1) or rng.random()<.18:continue
+            px=cx+j*62*math.cos(angle);py=cy+j*62*math.sin(angle)
+            put(rng.choice(['GBWTopWall1','GBWTopWall2','GBWTopWall4']),px,py,angle,'OldWalls',gap=40)
     # Dead woodland follows a sheltered basin; ridges receive scree instead.
-    for _ in range(15000):
+    for _ in range(95000):
         px=rng.uniform(80,8320);py=rng.uniform(80,9420);ix,iy=round(px/10)+30,round(py/10)+30
         s=slope[iy,ix];height=z[iy,ix];g=grove[iy,ix]
         if s>.75:continue
         chance=rng.random()
         if g>.28 and s<.30 and chance<g*.85:
-            put(rng.choice(['TreeDead01','TreeDead02','TreeDead03','TreeDead02']),px,py,layer='Deadwood',gap=55)
+            put(rng.choice(['TreeDead01','TreeDead02','TreeDead03','TreeDead05','TreeDead07','PTree13_Dead']),px,py,layer='Deadwood',gap=42)
         elif height>260 and chance<.28:
-            put(rng.choice(['MordorRockClump03','MordorRockClump04','MordorRockClump07','MordorRockClump09']),px,py,layer='Scree',gap=65)
+            put(rng.choice(['MordorRockClump03','MordorRockClump04','MordorRockClump07','MordorRockClump09',
+                            'MordorRockClump05','MordorRockClump13','MordorRockClump18']),px,py,layer='Scree',gap=58)
         elif height<250 and chance<.018:
             put(rng.choice(['TreeDead01','TreeDead02']),px,py,layer='LoneTrees',gap=140)
     if polish:
@@ -215,14 +246,14 @@ def decorate(m,x,y,z,slope,road,grove,polish=False):
         # rubble by buildings and thin grass where shelter and moisture remain.
         for o in list(m.objects()):
             if o['template'].startswith(('Osgiliath','GBWTopR')):
-                for _ in range(7):
+                for _ in range(13):
                     a=rng.random()*math.tau;r=rng.uniform(50,150)
                     put(rng.choice(['MoriaRubble01','MoriaRubble02','DarkRockGrey07']),o['x']+r*math.cos(a),o['y']+r*math.sin(a),layer='RuinDebris',gap=22)
-        for _ in range(11000):
+        for _ in range(36000):
             px=rng.uniform(120,8280);py=rng.uniform(120,9380);ix,iy=round(px/10)+30,round(py/10)+30
             if slope[iy,ix]>.35:continue
             if grove[iy,ix]>.30 or (.13<slope[iy,ix]<.28 and z[iy,ix]>180):
-                put(rng.choice(['OptGrass08','OptGrass09','DarkRockGrey07']),px,py,layer='GroundDetails',gap=28)
+                put(rng.choice(['OptGrass08','OptGrass09','OptBush01','PTStump01','TreeLog','MordorRockClump07']),px,py,layer='GroundDetails',gap=25)
     return dict(placed)
 
 
@@ -246,6 +277,8 @@ def main():
     OUT.mkdir(parents=True,exist_ok=True)
     stages=[];m=create();stages.append(checkpoint(m,'00-empty','Uniform elevation 100; no objects, roads, water or scripts.'))
     starts(m,STARTS);stages.append(checkpoint(m,'01-functional','Two authored starts only. Native empty-document loading verified separately.'))
+    # Macro texture stretching is independent of the tiled ground materials.
+    env=m.chunk('EnvironmentData');env.data=env.data[:8]+b'\1'+env.data[9:]
     for i in range(3):
         _,_,study,*_=terrain(i);preview(study,OUT/f'02-composition-{i+1}.png',annotated=True)
     x,y,z,dists,broad,mid,fine=terrain(1)
@@ -260,7 +293,7 @@ def main():
         stages.append(checkpoint(m,'05-materials','Nine native terrain materials, slope-driven scree, shelter-driven ground cover and directional blends.'))
     if args.phase in ('detail','polish'):
         decorate(m,x,y,z,slope,road,grove,polish=args.phase=='polish')
-        stages.append(checkpoint(m,'07-polish' if args.phase=='polish' else '06-local-scenes','Fallen Watch, three ruined hamlets, deadwood basin, scree fields; main routes and base space protected.'))
+        stages.append(checkpoint(m,'07-polish' if args.phase=='polish' else '06-local-scenes','Fallen Watch, six settlement sites, six woodland pockets, broken walls and scree; main routes and base space protected.'))
     preview(z,OUT/'terrain-plan.png',labels,annotated=True)
     preview(z,OUT/'terrain-relief.png',labels)
     path=ROOT/'runtime/bfme-host/mod/maps'/NAME/(NAME+'.map');path.parent.mkdir(parents=True,exist_ok=True);path.write_bytes(m.encode())
@@ -274,8 +307,8 @@ def main():
     report.update(phase=args.phase,source_map=None,seed=20261008,checkpoints=stages,route_grid_audit=routes,
                   worldbuilder_verified=False,native_horde_paths_verified=False)
     (OUT/'build.json').write_text(json.dumps(report,indent=2)+'\n')
-    (OUT/'tour.json').write_text(json.dumps(dict(output='artifacts/ashen-march/'+args.phase,
-        map_sha256=sha(path.read_bytes()),photo_output='artifacts/ashen-march/photo',photo_name='The-Ashen-March',photo_focus=[4200,4750,120],shots=[
+    (OUT/'tour.json').write_text(json.dumps(dict(output='artifacts/ashen-march/revision-2',
+        map_sha256=sha(path.read_bytes()),photo_output='artifacts/ashen-march/revision-2/photo',photo_name='The-Ashen-March-v2',photo_focus=[4200,4750,120],shots=[
         ['fallen-watch',3050,5500,950],['deadwood-basin',5780,3940,1200],
         ['broken-ridge',5950,5400,1900],['strategic-overview',4200,4750,15500]]),indent=2))
     print(json.dumps(dict(map=str(path),objects=report['objects'],height_range=report['height_range'],routes=routes)))

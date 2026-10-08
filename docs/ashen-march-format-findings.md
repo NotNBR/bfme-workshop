@@ -85,7 +85,7 @@ Placement validation also needs scene-level assertions. A generic spacing filter
 
 Subsequent checkpoint writes preserve a changed previous map in a hash-named `history` file. The camera-tour configuration carries the generated map's SHA-256 into the native validation report. Earlier exploratory reports predate that metadata field; their recorded camera positions and image files remain evidence of those earlier passes, not a claim that every later map byte was already tested.
 
-## Final measured build
+## First-release measured build
 
 - 900 × 1010 stored samples, 840 × 950 playable tiles, border 30.
 - Height range: 84.0625 to 1191.171875 world units.
@@ -100,3 +100,81 @@ The evidence report is `artifacts/ashen-march/polish/native-validation.json`. Th
 The final native portrait also completed: 60 render-target tiles, 8,000 × 8,000 output pixels, 70-degree camera elevation (20 degrees off vertical), zero extension faults and no upscaling. `artifacts/ashen-march/photo/capture.json` records the capture. The JPEG is approximately 23.6 MB and the lossless PNG 78.8 MB. All tiles use the same fixed projection; the simulation advances between tiles, so this is a landscape portrait rather than a synchronized battle photograph.
 
 The map was then launched interactively with Mordor as the human faction, Elves as the AI, revealed terrain and strategic controls. This verifies the new launch preset independently of the screenshot-only runs.
+
+## Revision 2: repetition, density and natural terrain
+
+The user correctly identified that the first build remained bland: large areas
+used the same visibly repeating material and the 1,279 props were sparse at this
+map size. A technically valid document and successful camera test do not establish
+visual quality. The next pass addresses the material, landform and scene scales
+together rather than merely increasing random noise.
+
+### Open algorithm research
+
+[FastNoiseLite's author documentation](https://github.com/Auburn/FastNoiseLite/wiki/Documentation)
+describes layered fractal noise and domain warping. [Daniel Andrino's terrain
+erosion project](https://github.com/dandrino/terrain-erosion-3-ways) discusses
+ridged noise, hydraulic transport and erosion-shaped terrain. These are references
+for the algorithm choices; no source files from either project are vendored.
+
+The new `earth.py` is an original NumPy implementation of gradient noise with
+quintic interpolation, rotated fBm octaves, and conservative eight-neighbour
+thermal relaxation. The map applies two independent noise fields to warp the
+ridge coordinates, adds ridged and smaller-scale relief, and then transfers
+material from slopes exceeding a talus threshold. Army routes and building
+grounds are graded afterward. This is **thermal erosion**, not a simulated
+hydraulic drainage network; the ridged cuts should not be described as physical
+river erosion. Tests check deterministic seeds, flat-ground preservation, mass
+conservation and closed boundaries.
+
+### Texture diagnosis
+
+In addition to repeated base materials, the native terrain has a separate macro
+texture stage. The read-only BFME1 reconstruction's `TerrainTex.cpp` shows repeat
+addressing and a historical default stretch factor covering about 31.5 terrain
+tiles. That is reference evidence, not proof of an identical BFME2 binary path.
+The BFME2 `EnvironmentData` v3 already contains an independent macro-stretch
+boolean at byte offset 8. Revision 2 sets it to true and checks the actual BFME2
+render. Ground material UVs remain at their original native scale.
+
+The previous high-contrast repeating soil sheets are replaced with quieter dirt
+materials and smaller, irregular patches at multiple scales. Worn tracks are
+narrower and discontinuous. Terrain textures remain finite repeating assets;
+this reduces recognizable patterns rather than claiming a fully nonrepeating
+terrain shader.
+
+### Asset placement changes
+
+Six woodland regions now shape the scene, including upland pockets and southern
+scrub. They contain several dead-tree models, fallen logs, stumps and undergrowth.
+The six abandoned settlements have larger ruin footprints, broken carts, barrels,
+crates and rubble; broken walls mark old boundaries. Rock shoulders receive a
+wider selection of Mordor rock models. Placement still reserves the main army
+corridors and clear base space. The spacing search now checks at least two
+neighbouring hash-grid cells so small props also respect nearby large reservations.
+
+Revision-2 native camera evidence is kept separately from the first release in
+`artifacts/ashen-march/revision-2/`. All four views passed for map SHA-256
+`5cf6aa168c25b6bc06f8b80fb8fec7a3d507eb9d40362b4a7f6fad904cfdbd5e`.
+There were no extension faults or original-profile changes. The GDI window
+capture still reports `blank-window`; the actual D3D render-target images show
+the terrain, objects and HUD and are the reviewed evidence.
+
+The build contains 4,521 object records and nine palette slots (eight unique
+texture names). Elevation spans 75.78125–1271.40625 units. The three sampled
+route centerlines pass the authoring check; full horde traversal remains untested.
+All 38 project tests pass, including the three new terrain-operator checks.
+
+Native review prompted one further palette correction: `DirtMordor08` against
+`DirtMordor09` made the small patches resemble camouflage. The final soils use
+09/11/18 with closer average luminance, the track reuses 09, and the cliff uses
+`CliffMordor02`. Close views show denser woodland and rubble and less conspicuous
+ground repetition. Large clearings and some cliff texture repetition remain;
+the change is an improvement, not evidence of a fully natural terrain renderer.
+
+The revision-2 portrait completed with 60 native tiles, 8,000 × 8,000 pixels,
+70-degree elevation and zero extension faults. The JPEG is 24,986,569 bytes;
+the PNG is 82,879,551 bytes. `revision-2/photo/capture.json` records the capture.
+For chat review, `revision-2/fullhd/` contains JPEG quality-88 copies fitted
+within 1920 × 1080 without cropping: the square overview is 1080 × 1080 and
+the three native 4:3 close views are 1440 × 1080.
