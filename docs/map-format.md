@@ -1,5 +1,9 @@
 # BFME2 world-file analysis
 
+For the image-to-terrain authoring pipeline, see the
+[heightmap workflow](heightmap-workflow.md). This document describes the native
+binary map that contains the resulting elevations and other map data.
+
 Analyzed 8 October 2026: Grey Mountains, Ithilien and Osgiliath from this project's
 native BFME2 mod tree. This is a read-only analysis; no map or running game was
 changed. The machine-readable reports are in `artifacts/worldbuilder-analysis/`.

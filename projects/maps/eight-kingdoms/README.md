@@ -82,6 +82,10 @@ export validation passes.
 
 ## Terrain authoring
 
+See the [heightmap workflow](../../../docs/heightmap-workflow.md) for source-image
+processing, grid orientation, native elevation precision and rebuild outputs,
+and the [map-file structure](../../../docs/map-format.md) for binary sections.
+
 The source document begins as an empty native plane; no stock `.map` landscape
 is loaded. `reference-height.jpg` supplies relative elevation and coastline
 shape. The header/legend are excluded and small disconnected text fragments
