@@ -126,16 +126,16 @@ edit template uses six-second opening and closing cards at 30 fps.
 ```text
 runtime/                              # Ignored game copy, profile, DLL and scratch state
 artifacts/
-  projects/maps/eight-kingdoms/<build-id>/
+  maps/eight-kingdoms/<build-id>/
     manifest.json
     map/                              # Native map, sidecars and package
     previews/
     validation/
     tour.json                         # Native inspection/photo configuration
-  projects/scenarios/eight-kingdoms-4v4/<run-id>/
+  scenarios/eight-kingdoms-4v4/<run-id>/
     manifest.json
     battle-plan.json
-  projects/showcases/eight-kingdoms/<run-id>/
+  showcases/eight-kingdoms/<run-id>/
     manifest.json
     capture/                          # Battle plan, live state and raw frames
     intermediates/                    # Compressed footage, score, edit segments, logs

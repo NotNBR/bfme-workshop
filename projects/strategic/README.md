@@ -1,7 +1,7 @@
 # Strategic extension
 
-`src/native/strategic.cpp` owns the BFME2 strategic camera, orthographic picking,
-symbol rendering and hook installation. `src/native/symbols.inc` contains the symbol
+`native/strategic.cpp` owns the BFME2 strategic camera, orthographic picking,
+symbol rendering and hook installation. `native/symbols.inc` contains the symbol
 geometry. Shared capture and scenario features are included from the repository's
 `src/native/` directory and keep their existing exported ABI.
 
