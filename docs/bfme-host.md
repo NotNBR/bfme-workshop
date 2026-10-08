@@ -12,6 +12,15 @@ Raw retail `-file` startup leaves the game-info pointer unset and player templat
 
 This machine's BFME2 registry entry selects a Witch-king-named profile directory. The wrapper reads that value and seeds Options.ini in the corresponding isolated directory. Seeding only the usual BFME2 directory caused the first-start CPU benchmark to run and crash. No registry value is changed.
 
+## Graphics preset
+
+The wrapper defaults to native Medium graphics instead of the reference smoke
+helper's Low preset. Medium restores volume/decal shadows, scenery props and
+full texture resolution. Use --graphics Low, Medium, High or UltraHigh to select
+another native preset. All changes stay in the isolated Options.ini profile.
+High enables shadow maps and terrain normal maps, but the Ashen March test only
+advanced two simulation frames in 180 seconds, so it is not our default.
+
 ## Strategic camera extension
 
 The mod changes only `cameraMaxHeight` in map metadata and the global fallback. Minimum height, pitch, terrain-related camera fields, and all other decompressed map bytes stay unchanged.

@@ -206,6 +206,12 @@ moisture, geology and use: exposed rock, grassy shoulders, damp low ground, worn
 road and settlement paving. Keep light/dark and warm/cool relationships readable
 at strategic distance. Add secondary materials only where they explain a transition.
 
+Do not cover open ground with noise-threshold material islands to conceal texture
+tiling. Even similar colors can read as camouflage when their edge density is too
+high. Establish a continuous base soil, then paint wear or exposed rock where the
+scene calls for it. Judge this at overview distance before adding another palette
+entry. The Ashen March revision-2 rejection is the worked counterexample.
+
 Blend boundaries at close range. Avoid repeating checkerboards, hard stamps, long
 unbroken rock bands and texture scale changes across adjacent tiles. Inspect cliff
 mapping and water banks separately. Our `paint` recipe applies a hard-edged base
@@ -214,6 +220,12 @@ coat and clears existing blends; it is not the finished blending pass.
 Choose lighting and atmosphere to support the theme while leaving slopes and units
 legible. Verify fog and water reflections in native views, including the far zoom.
 Do not grade the image or add props merely to hide malformed terrain.
+
+Record the native graphics preset with the review. The reference smoke profile's
+Low preset hides props and disables volume/shadow-map shadows, so it can conceal
+authored detail and invalidate a lighting judgement. The current launcher defaults
+to Medium; High's shadow-map path failed the large-map timing test. Confirm cast
+shadows in actual screenshots and keep performance evidence with any preset change.
 
 **Produce:** palette list, representative material transitions and day/lighting
 settings. **Advance when:** the landscape reads well without dense scenery.

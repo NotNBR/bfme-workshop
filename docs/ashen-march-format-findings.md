@@ -178,3 +178,70 @@ the PNG is 82,879,551 bytes. `revision-2/photo/capture.json` records the capture
 For chat review, `revision-2/fullhd/` contains JPEG quality-88 copies fitted
 within 1920 × 1080 without cropping: the square overview is 1080 × 1080 and
 the three native 4:3 close views are 1440 × 1080.
+
+## Revision 3: patch placement and missing shadows
+
+The revision-2 soil still read as a camouflage mosaic. Closer average RGB values
+did not solve the random, map-wide material boundaries. Revision 3 removes the
+noise-threshold assignments from the open ground and woodland. A continuous
+soil bed carries those regions (initially 11, finally the finer-grained 18). Worn tracks use 09; exposed slopes move
+through 18, rock 02/06 and cliff 02 at increasing steepness. Noise only breaks up
+local wear and a few rubble beds. The native one-cell blends are unchanged; this
+does not claim new broad alpha-blending support.
+
+The missing cast shadows had a separate cause: both isolated profiles inherited
+`StaticGameLOD = Low` from `openbfme2/tools/boot_smoke.py`. The native `gamelod.ini`
+explicitly disables volume shadows, shadow maps, terrain normal maps and props
+at Low and reduces texture resolution by one level. Medium enables volume and
+decal shadows, props and full textures; High uses shadow maps and normal maps.
+The wrapper now writes all three Static/Fixed/Ideal LOD keys and exposes an
+explicit `--graphics` option. It still changes only the isolated profile.
+
+An otherwise unchanged revision-2 map was tested at High first. It produced no
+camera shots and only reached simulation frame 2 during the 180-second test.
+That failure is preserved in `revision-3/high-baseline/native-validation.json`.
+It does not isolate which High feature causes the slowdown. Medium is the next
+candidate, not a claim that arbitrary shadow-map settings work on a 900 × 1010
+sample terrain. The new map also uses a lower directional sun, weaker accent
+fill and shadow alpha 128 rather than 64 to make form and cast shadows legible.
+
+Medium passed all four native camera views and the simulation-frame check with
+zero extension faults and no original-profile changes. Actual screenshots show
+cast shadows from the tower, arches, ruins and trees, and previously hidden logs,
+grass and rock props. The first directional-light pass was too dark, so the final
+ambient RGB is .18/.19/.215 and key diffuse is .70/.65/.56, with direction
+.64/.54/-.55. That brighter revision passed again. Pre-macro-correction SHA-256:
+`08a129d161a5e063dbd6a6d5657c09f364f72055b8fbde05a98813ba26204ad0`.
+The 38 automated tests pass. Native camera checks are not a large-army performance
+benchmark; High remains an explicitly failed experiment rather than a supported
+quality recommendation for this map.
+
+That portrait also passed: 60 native tiles, 8000 × 8000, no upscaling and
+zero extension faults. Revision-3 JPEG: 15,554,430 bytes; PNG: 65,884,805 bytes.
+The `fullhd` directory contains quality-88 JPEGs fitted within 1920 × 1080.
+These presentation files only resize/compress the native captures; their
+lighting and shadows are rendered in the game, not added afterward.
+
+The large portrait revealed a second repetition source that was subtle in close
+views: `TSNoiseUrb` itself. Its compiled DDS is only 256 × 256 and contains a
+strong cloudy motif. Changing base soil did not remove that overlay. The native
+`TSNoise2kNoGreen.tga` resolves to a 1024 × 1024 compiled JPEG, despite the name,
+and has quieter broad variation. Stock Dagorlad, Fangorn and Gondor world-map
+environment records also reference it; only that asset choice was inspected,
+not their terrain or layout copied. The next controlled change replaces only
+the macro asset in EnvironmentData while preserving lighting and all placements.
+The earlier four-view evidence is retained in `revision-3/urban-macro/`.
+
+The controlled macro comparison only slightly changed the ground; it did not
+remove the dominant cloudy repeat. The initial attribution to the macro alone
+was incomplete. The subsequent material review identified DirtMordor11 itself
+as too mottled when repeated over broad clearings with distance-dependent native
+texturing. The final base soil uses the finer ash/gravel DirtMordor18. The quieter
+macro is retained, but the soil change is the important additional correction.
+
+Final soil/macro candidate passed all four native camera views, simulation
+advancement and profile/extension checks. Map SHA-256:
+`1d2c78162fe47c18cc8be98e5bc0e86ddec67d43205ecd8921e0309fe3cccd3c`.
+The overview no longer shows the dominant large cloudy soil motif; finite native
+texture repetition is still possible. `graphics-review.json` records the preset
+alongside this hash. Geometry, routes and the 4,521 placements are unchanged.

@@ -14,18 +14,18 @@ def add_chunk(m, name, version, data):
 
 def lighting():
     # Nine lights per time of day: terrain, objects, infantry for each direction.
-    # Cold overcast fill and a subdued warm key retain legible silhouettes.
+    # Raking sunlight and restrained fill reveal terrain and model volume.
     out = bytearray(struct.pack('<I', 2))
     for _ in range(4):
         for ambient, color, direction in [
-            ((.12,.14,.17),(.38,.35,.30),(.42,.50,-.76)),
-            ((0,0,0),(.10,.13,.19),(-.65,-.3,-.70)),
-            ((0,0,0),(.03,.03,.04),(.2,-.9,-.38))]:
+            ((.18,.19,.215),(.70,.65,.56),(.64,.54,-.55)),
+            ((0,0,0),(.045,.06,.085),(-.65,-.3,-.70)),
+            ((0,0,0),(.015,.02,.025),(.2,-.9,-.38))]:
             for target in range(3):
                 gain = 1.10 if target else 1.0
                 out += struct.pack('<9f',*ambient,*(v*gain for v in color),*direction)
     # BFME2 v8 legacy shadow/fog defaults, encoded explicitly (no opaque donor).
-    out += struct.pack('<II9fI3f',0x40000000,0,*([.15686275]*3),*([.4980392]*6),0xFFA0A0A0,1,1,1)
+    out += struct.pack('<II9fI3f',0x80000000,0,*([.15686275]*3),*([.4980392]*6),0xFFA0A0A0,1,1,1)
     assert len(out)==1360
     return bytes(out)
 

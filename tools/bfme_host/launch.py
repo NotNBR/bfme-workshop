@@ -19,6 +19,8 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument('--showcase', action='store_true', help='Record a directed 29-second gameplay video; requires imageio-ffmpeg')
     parser.add_argument('--window', action='store_true')
+    parser.add_argument('--graphics',choices=['Low','Medium','High','UltraHigh'],default='Medium',
+                        help='Native graphics preset; Medium uses volume shadows and full textures')
     parser.add_argument('--menu', action='store_true')
     parser.add_argument('--test', action='store_true')
     parser.add_argument('--zoom-check', action='store_true')
@@ -136,8 +138,14 @@ def main():
     profile = boot.prepare_sandbox_profile(appdata)
     options = profile / 'Options.ini'
     text = options.read_text()
-    text, replaced = re.subn(r'(?m)^Resolution\s*=.*$', 'Resolution = 1600 1200', text)
-    if not replaced:text += '\nResolution = 1600 1200\n'
+    # The reference smoke profile defaults to Low, which disables shadow maps,
+    # terrain normals and scenery props. Medium restores volume/decal shadows,
+    # props and full textures without the very costly shadow-map path on our
+    # oversized terrain. Modify only this isolated profile.
+    for key,value in [('Resolution','1600 1200'),('StaticGameLOD',args.graphics),
+                      ('FixedStaticGameLOD',args.graphics),('IdealStaticGameLOD',args.graphics)]:
+        text,replaced=re.subn(r'(?m)^'+key+r'\s*=.*$',key+' = '+value,text)
+        if not replaced:text+='\n'+key+' = '+value+'\n'
     options.write_text(text)
     if args.test:
         status = game_smoke.main([

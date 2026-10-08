@@ -8,7 +8,7 @@ The landscape uses charcoal soil, worn tracks, pale broken masonry and occasiona
 
 The map is 840 × 950 playable tiles (8,400 × 9,500 world units), approximately three times Grey Mountains' playable area. Two generously cleared starts occupy opposing ends. The shorter central approach carries the main army; the longer western route offers elevation; the eastern route winds through lower ground. These are design intentions, not a claim of measured competitive balance.
 
-## Revision 2: natural terrain and denser scenery
+## Terrain and scenery
 
 Following feedback about blandness and tiling, the map now uses domain-warped
 gradient noise, rotated fBm octaves, ridged relief and thermal erosion around
@@ -20,10 +20,13 @@ Scenery increased from 1,279 to **4,521 objects**: 1,764 trees in woodland pocke
 ruins, settlement debris, boundary walls, watch pieces and start records.
 Six settlement sites and six woodland regions replace the sparse first pass.
 
-Ground uses quieter materials with smaller irregular patches and less contrast
-between neighbouring soils. The macro texture is stretched across the map, and
-the tracks are narrower and broken. Finite native textures still repeat; this
-pass targets visible regularity rather than claiming a new terrain shader.
+Revision 3 replaces the still-patchy soil mosaic with a continuous soil bed.
+Other materials mark worn paths, rubble and progressively steeper exposed rock.
+The macro texture uses the quieter native `TSNoise2kNoGreen` asset. Finite native textures still
+repeat; this is native terrain painting rather than a new terrain shader.
+The launcher now uses Medium graphics to restore cast shadows, props and full
+textures; High stalled the large-map test. Lower directional sunlight and
+restrained accent lights reveal the terrain, with enough ambient light for play.
 The [research and technical log](ashen-march-format-findings.md#revision-2-repetition-density-and-natural-terrain)
 links the open algorithm references and records what was actually implemented.
 
@@ -33,7 +36,7 @@ links the open algorithm references and records what was actually implemented.
 2. **Composition studies.** Compare central obstruction, split spurs and transverse ridge. Select split spurs because it frames an open central battle while separating both flanks. These are diagnostic terrain studies, not game screenshots.
 3. **Large forms.** Build overlapping ridges, shoulders and secondary spurs. Keep the interior lower than the perimeter. Revision 2 spans roughly 76–1,271 world units, with domain warping and thermal relaxation before route grading.
 4. **Routes and ground.** Grade three routes at different elevations; feather their margins into slopes. Flatten broad construction space gradually to avoid circular cliff rings. Add a ramp to the watch. Refine angular road control points into curves after reviewing the first pass.
-5. **Materials.** Inspect native texture artwork. Use nine palette slots (eight unique textures in revision 2) tied to slope, elevation, shelter and road wear, with directional blend records at region edges. Avoid lava because this is a ruined borderland, not a crater.
+5. **Materials.** Inspect native texture artwork. Use nine palette slots (five unique textures in revision 3) tied to exposed slope and road wear, with directional blend records at region edges. Avoid map-wide random material patches and lava.
 6. **Local scenes.** Compose the watch, broken enclosure, threshold statues and open approach. Align small ruin groups to former settlement streets. Concentrate dead trees in the basin and rock debris on mountain shoulders.
 7. **Polish and correction.** Place rubble near ruins and ground detail in sheltered pockets. Review native images: change the pale road to darker worn dirt, reduce color contrast between soil patches, replace pale scree with Mordor rock, strengthen the watch silhouette and set the correct distant-tree model. Add original minimap art. Disable distance fog for strategic zoom.
 8. **Native review.** Photograph four distinct locations through BFME2's renderer. Keep empty, terrain and final evidence separately. Do not treat an image or grid check as proof of full gameplay balance.
@@ -59,12 +62,12 @@ Four-view native verification:
 
 Use `--map-photo` instead of `--map-check` for the native 8K portrait. It tiles BFME2's renderer; the simulation continues between tiles.
 
-Revision-2 portrait destination: `artifacts/ashen-march/revision-2/photo/The-Ashen-March-v2-8000.jpg`. Close views and their native validation report are in `artifacts/ashen-march/revision-2/`. The original portrait and first-release screenshots remain in `photo/` and `polish/` for comparison.
+Revision-3 portrait destination: `artifacts/ashen-march/revision-3/photo/The-Ashen-March-v3-8000.jpg`. Close views and their native validation report are in `artifacts/ashen-march/revision-3/`. Earlier portraits and screenshots remain in their revision directories for comparison.
 
 ## Verification boundaries
 
-Revision 2 contains 4,521 object records and nine terrain palette entries. Its
-SHA-256 is `5cf6aa168c25b6bc06f8b80fb8fec7a3d507eb9d40362b4a7f6fad904cfdbd5e`.
+Revision 3 contains 4,521 object records and nine terrain palette entries. Its
+SHA-256 is `1d2c78162fe47c18cc8be98e5bc0e86ddec67d43205ecd8921e0309fe3cccd3c`.
 The project's 38 automated tests pass. All four native camera views passed for
 this hash, with zero extension faults and no original-profile changes. The native
 report stores the tested map hash alongside its actual camera positions and screenshots.

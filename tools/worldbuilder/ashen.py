@@ -15,7 +15,7 @@ import numpy as np
 from PIL import Image, ImageDraw
 
 from .blank import create, starts, set_heights, set_materials, add_object
-from .format import Map, sha
+from .format import Map, sha, string
 from .ithilien import cache_entry
 from .earth import fbm, gradient_noise, thermal_erosion
 
@@ -27,8 +27,8 @@ STARTS=[(1650,1700),(6750,7800)]
 ROUTES=[[(1650,1700),(2800,2800),(3550,4050),(4450,5300),(5400,6650),(6750,7800)],
         [(1650,1700),(1950,3400),(1950,5150),(3100,6800),(4800,7800),(6750,7800)],
         [(1650,1700),(3550,2100),(5650,3300),(6600,5050),(6950,6500),(6750,7800)]]
-PALETTE=['DirtMordor09','DirtMordor11','DirtMordor18','RockMordor06',
-         'CliffMordor02','RockMordor02','DirtMordor09','DirtMordor17','RockMordor07']
+PALETTE=['DirtMordor18','DirtMordor09','DirtMordor18','RockMordor06',
+         'CliffMordor02','RockMordor02','DirtMordor09','DirtMordor18','RockMordor02']
 
 
 def smooth(a,b,x):
@@ -152,14 +152,13 @@ def checkpoint(m,name,notes):
 def materials(x,y,z,dists,broad,mid,fine):
     dy,dx=np.gradient(z,10);slope=np.hypot(dx,dy)
     labels=np.zeros(z.shape,dtype='u2')
-    # Several natural patch scales interrupt the old kilometre-wide sheets of
-    # the same high-contrast 80-unit repeat. Quiet dirt carries open ground.
+    # A continuous soil bed. Noise shapes local wear, never a map-wide mosaic.
+    # Material changes describe exposed slopes and paths, not noise contours.
     patches=fbm(x+110*mid,y+100*broad,230,1301,3)
-    labels[patches+.15*mid>.06]=1
-    labels[(patches<-.12)&(z<280)]=2
-    labels[(z>240)&(patches>-.12)]=3
-    labels[slope>.55]=4
-    labels[(slope>.32)&(patches>.10)]=5
+    labels[(slope>.30)&(z>260)]=2
+    labels[(slope>.58)&(z>340)]=5
+    labels[(slope>.85)&(z>430)]=3
+    labels[(slope>1.12)&(z>500)]=4
     # Wide material masses, then road wear and pockets of exhausted scrub.
     road=np.minimum.reduce(dists)
     labels[(road<25+18*mid+16*fine)&(patches>-.13)&(slope<.32)]=6
@@ -168,9 +167,10 @@ def materials(x,y,z,dists,broad,mid,fine):
                          (4200,7550,1150,650),(4050,2200,1300,700),
                          (1150,3900,750,1100),(7300,6900,650,700)]:
         grove=np.maximum(grove,np.exp(-((x-cx)/sx)**2-((y-cy)/sy)**2))
-    labels[(grove+.25*mid>.56)&(road>280)&(slope<.32)]=7
+    # Woodland keeps the same soil; vegetation and shadows provide its tone.
     watch=np.hypot(x-3050,y-5520)
-    labels[(watch<240+30*mid)&(slope<.2)]=8
+    # Small grounded rubble beds, not a circular contrasting island.
+    labels[(watch<150+30*mid)&(patches>.08)&(slope<.2)]=8
     return labels,slope,road,grove
 
 
@@ -277,8 +277,10 @@ def main():
     OUT.mkdir(parents=True,exist_ok=True)
     stages=[];m=create();stages.append(checkpoint(m,'00-empty','Uniform elevation 100; no objects, roads, water or scripts.'))
     starts(m,STARTS);stages.append(checkpoint(m,'01-functional','Two authored starts only. Native empty-document loading verified separately.'))
-    # Macro texture stretching is independent of the tiled ground materials.
-    env=m.chunk('EnvironmentData');env.data=env.data[:8]+b'\1'+env.data[9:]
+    # The default 256px urban noise makes a coarse repeating camouflage grid.
+    # Use the existing, quieter 1024px landscape macro used by native maps.
+    env=m.chunk('EnvironmentData')
+    env.data=env.data[:8]+b'\1'+string('TSNoise2kNoGreen.tga')+string('TSCloudMed.tga')
     for i in range(3):
         _,_,study,*_=terrain(i);preview(study,OUT/f'02-composition-{i+1}.png',annotated=True)
     x,y,z,dists,broad,mid,fine=terrain(1)
@@ -307,8 +309,8 @@ def main():
     report.update(phase=args.phase,source_map=None,seed=20261008,checkpoints=stages,route_grid_audit=routes,
                   worldbuilder_verified=False,native_horde_paths_verified=False)
     (OUT/'build.json').write_text(json.dumps(report,indent=2)+'\n')
-    (OUT/'tour.json').write_text(json.dumps(dict(output='artifacts/ashen-march/revision-2',
-        map_sha256=sha(path.read_bytes()),photo_output='artifacts/ashen-march/revision-2/photo',photo_name='The-Ashen-March-v2',photo_focus=[4200,4750,120],shots=[
+    (OUT/'tour.json').write_text(json.dumps(dict(output='artifacts/ashen-march/revision-3',
+        map_sha256=sha(path.read_bytes()),photo_output='artifacts/ashen-march/revision-3/photo',photo_name='The-Ashen-March-v3',photo_focus=[4200,4750,120],shots=[
         ['fallen-watch',3050,5500,950],['deadwood-basin',5780,3940,1200],
         ['broken-ridge',5950,5400,1900],['strategic-overview',4200,4750,15500]]),indent=2))
     print(json.dumps(dict(map=str(path),objects=report['objects'],height_range=report['height_range'],routes=routes)))
