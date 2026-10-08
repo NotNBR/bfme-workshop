@@ -22,6 +22,7 @@ def main():
                         help='Native graphics preset; Medium uses volume shadows and full textures')
     parser.add_argument('--menu', action='store_true')
     parser.add_argument('--test', action='store_true')
+    parser.add_argument('--script-check', type=pathlib.Path, help='Validate script-lab marker objects using a proof JSON')
     parser.add_argument('--zoom-check', action='store_true')
     parser.add_argument('--strategic', action='store_true')
     parser.add_argument('--strategic-check', action='store_true')
@@ -39,6 +40,10 @@ def main():
     parser.add_argument('--map-photo',action='store_true',help='Render a tiled 8000-pixel map portrait')
     parser.add_argument('--battle', choices=['orcs-elves'], help='Start a prepared Mordor-versus-Elves battalion battle')
     args = parser.parse_args()
+    if args.script_check:
+        if args.battle or args.frontier or args.ashen or args.eight_kingdoms or args.kingdoms_battle or args.kingdoms_trailer or args.menu or args.vanilla or args.map_check or args.map_photo:
+            parser.error('--script-check requires a standalone map test')
+        args.test = True
     if args.kingdoms_trailer:args.kingdoms_battle=args.test=True
     if args.kingdoms_battle:args.eight_kingdoms=True
     if args.eight_kingdoms:
@@ -99,6 +104,10 @@ def main():
     sys.dont_write_bytecode = True
     sys.path.insert(0, str(reference))
     import game_smoke
+    if args.script_check:
+        import bfmexbar.mapkit.script_check as script_check
+        script_source = script_check.preflight(pathlib.Path(config['mod']), args.map, args.script_check)
+        script_check.register(game_smoke, args.script_check)
     if args.map_photo:
         import bfmexbar.capture.map_photo as map_photo
         map_photo.register(game_smoke,args.map_tour)
@@ -171,6 +180,7 @@ def main():
             '--guard', config['game'],
         ])
         if args.kingdoms_trailer:return kingdoms_battle.validate(output)
+        if args.script_check:return script_check.validate(output, args.script_check, script_source)
         if args.map_photo:return map_photo.validate(output)
         if args.map_check:return map_check.validate(output)
         if args.zoom_check and status == 0:

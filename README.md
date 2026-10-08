@@ -71,7 +71,8 @@ unverified.
 
 - [Map creation workflow](docs/map-creation-workflow.md)
 - [Using a heightmap](docs/heightmap-workflow.md)
-- [Native map-file structure](docs/map-format.md)
+- [Mapping rules, file structure and coverage](docs/mapping-reference.md)
+- [Native screenshots and camera evidence](docs/native-screenshots.md)
 - [BFME2 integration and technical details](docs/bfme-host.md)
 - [License](LICENSE.txt) and [third-party notices](docs/licenses/README.md)
 

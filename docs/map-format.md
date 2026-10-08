@@ -1,5 +1,10 @@
 # BFME2 world-file analysis
 
+For the current section-by-section coverage and authoring constraints, see the
+[mapping reference](mapping-reference.md). The three-map measurements below are
+an earlier detailed example; the broader audit now covers 270 map, base and
+library documents across the local `Maps.big`, `Bases.big` and `Libraries.big`.
+
 For the image-to-terrain authoring pipeline, see the
 [heightmap workflow](heightmap-workflow.md). This document describes the native
 binary map that contains the resulting elevations and other map data.
@@ -147,8 +152,12 @@ runtime shroud/fog system.
 The tail holds texture descriptors, blend descriptors and cliff UV mappings.
 Texture descriptors name existing game textures and describe their cell layout.
 Blend descriptors are 18 bytes each in these files; cliff mappings are 38 bytes.
-The analyzer consumes this entire tail exactly for all three maps. Several blend
-flags remain semantically uncertain and are retained raw.
+The analyzer consumes this entire tail exactly for all three maps. A subsequent
+[WorldBuilder source investigation](worldbuilder-terrain.md) names the blend
+flags and cliff fields, adds edge-texture-table parsing, and checks the terrain
+records across 65 retail maps. Source-based interpretations remain distinct from
+verified BFME2 rendering behavior; unusual raw values are reported rather than
+silently normalized.
 
 Changing the heightmap dimensions therefore requires rebuilding **all eleven
 matching planes** and their counts, while keeping palette references valid.
@@ -207,8 +216,9 @@ pathfinding still need testing.
 Ithilien contains twelve river strips, including `ford1` through `ford4`, and 140
 cliff UV mappings. These make it a useful visual reference, but more complicated to
 resize than Grey Mountains. Osgiliath contributes a richer ruin palette and has two
-top-level scripts, `Set Science` and `Towers Fall`. Their names and boundaries were
-decoded; their action/condition operands were not interpreted in this pass.
+top-level scripts, `Set Science` and `Towers Fall`. The initial pass decoded names
+and boundaries; the later [script decoder](map-scripts.md) reads their stored
+arguments too. Opcode behavior is still a separate investigation.
 
 Named cameras contain a look-at XYZ, name, pitch, roll, yaw, zoom, field of view and
 an unresolved float. Animated camera tracks are separate. Bookmarks can lie outside
@@ -244,8 +254,8 @@ long-match performance and general engine size limits remain unverified.
 
 An enlargement should coordinate terrain, all blend/flag planes, borders, object
 and road positions, water geometry, player starts, trigger regions, waypoint links,
-camera locations and any script coordinates. Then rebuild runtime-derived data
-by loading/saving in WorldBuilder and loading the map in BFME2. Test routes with
+camera locations and any script coordinates. Regenerate discovery/cache data
+and load the map in BFME2. Test routes with
 actual hordes, especially crossings and reinforcements.
 
 For the intended result, expand the land and author new detail rather than scaling
@@ -255,7 +265,7 @@ behavior can stay unchanged while the battlefield gains more space.
 ## Reproduce and confidence limits
 
 ```powershell
-.\.venv\Scripts\python.exe -m tools.worldbuilder.analyze `
+.\.venv\Scripts\python.exe -m bfmexbar.mapkit.analyze `
   'runtime/bfme-host/mod/maps/map mp grey mountains/map mp grey mountains.map' `
   --out artifacts/worldbuilder-analysis/grey-mountains.json
 ```
@@ -265,10 +275,13 @@ palettes, object counts, waypoints, player/team properties, water geometry and n
 cameras. It rejects trailing bytes in decoded record collections. Unsupported
 sections are reported as unresolved instead of guessed.
 
-Not yet semantically decoded: script action operands, nonempty build-list entries,
-lighting/post-effects/environment fields, animated camera tracks, some blend flags
-and camera fields. The current analysis does not certify map-size limits, bridge
-behavior, multiplayer compatibility or live editor operation.
+The analyzer now decodes build-list entries, core lighting/environment fields,
+post effects and free/look camera tracks. Nonempty build lists have source and
+synthetic tests but no nonempty example in the 67-map corpus. Remaining unknowns
+include script opcode semantics, legacy lighting bytes and some camera semantics.
+The [mapping reference](mapping-reference.md) records these limits, legacy
+inspection coverage and the Rhûn texture-index anomaly. Structural analysis does not
+certify general map-size limits, bridge behavior or multiplayer compatibility.
 
 Format references: [OpenSAGE map definitions](https://github.com/OpenSAGE/OpenSAGE/tree/master/src/OpenSage.Game/Data/Map),
 [SidesList parser](https://github.com/OpenSAGE/OpenSAGE/blob/master/src/OpenSage.Game/Logic/Map/SidesList.cs),

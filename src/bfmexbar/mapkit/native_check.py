@@ -6,6 +6,8 @@ from pathlib import Path
 import struct
 
 from PIL import Image,ImageStat
+from bfmexbar.formats.map import sha
+from bfmexbar.strategic.inject import read_state
 
 OUT=ROOT/'artifacts/ithilien-frontier'
 
@@ -24,15 +26,17 @@ def register(smoke,tour=None):
         bridge_probes=config.get('bridge_probes',[])
         OUT=ROOT/config['output']
         shots=config['shots']
-        if len(shots)!=4:raise ValueError('Native validation requires four distinct camera shots')
+    from bfmexbar.capture.screenshots import validate_shots
+    shots=validate_shots(shots)
     OUT.mkdir(parents=True,exist_ok=True)
     def factory(args,samples,mode):
-        args.seconds=85 if bridge_probes else 65
+        args.seconds=max(85 if bridge_probes else 65, 10*len(shots)+15)
         basic=original(args,samples,mode)
         stage=0;pending=None;next_frame=5
         def tick(game):
             nonlocal stage,pending,next_frame
             if map_hash:game.res['authored_map_sha256']=map_hash
+            game.res['map_shots_requested']=[shot[0] for shot in shots]
             result=basic(game)
             frame,current=game.logic()
             if current!=mode or frame is None:return result
@@ -45,13 +49,20 @@ def register(smoke,tour=None):
                 request,status,w,h,pitch,pixels=state
                 if not request:
                     if status or not pixels:raise RuntimeError(f'Native screenshot failed: {status:#x}')
+                    if not (0<w<=8192 and 0<h<=8192 and w*4<=pitch<=w*4+65536):
+                        raise RuntimeError('Invalid native screenshot surface dimensions')
                     raw=game.read(pixels,pitch*h)
                     picture=Image.frombytes('RGB',(w,h),raw,'raw','BGRX',pitch,1)
                     destination=OUT/(pending+'.png');picture.save(destination)
                     deviation=sum(ImageStat.Stat(picture).stddev)/3
                     view=game.u32(game.base+0x9FEA3C)
                     focus=struct.unpack('<3f',game.read(view+0xC,12))
-                    game.res.setdefault('map_shots',[]).append(dict(name=pending,path=str(destination),stddev=deviation,frame=frame,focus=focus))
+                    game.res.setdefault('map_shots',[]).append(dict(name=pending,path=str(destination),
+                        stddev=deviation,frame=frame,focus=focus,width=w,height=h,
+                        png_sha256=sha(destination.read_bytes()),camera=read_state(game),
+                        requested_camera=list(shots[stage][1:]),
+                        capture_method='native-d3d9-render-target',includes_hud=True))
+                    print(f'Native screenshot: {pending} ({w}x{h}, frame {frame})',flush=True)
                     pending=None;stage+=1;next_frame=frame+4
             if stage<len(shots) and frame>=next_frame and not pending:
                 name,x,y,height=shots[stage]
@@ -84,7 +95,10 @@ def validate(output):
     # GDI's screenshot can be blank for this D3D9 window; use the actual render target.
     errors=[]
     if report['outcome'] not in ('pass','blank-window'):errors.append(report['outcome'])
-    if len(shots)!=4 or any(s['stddev']<5 for s in shots):errors.append('Missing or blank native render-target views')
+    expected=report['run'].get('map_shots_requested',[])
+    if not expected or [s['name'] for s in shots]!=expected:
+        errors.append('Missing or out-of-order native render-target views')
+    if any(s['stddev']<5 for s in shots):errors.append('Blank native render-target views')
     if report['run'].get('strategic',{}).get('faults',1):errors.append('Native extension fault')
     if not any(frame and frame>=100 and mode==2 for _,frame,mode in report['samples']):errors.append('Insufficient skirmish frames')
     if report.get('profile_touched'):errors.append('Original profile changed')

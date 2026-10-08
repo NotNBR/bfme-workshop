@@ -65,7 +65,9 @@ class WorldBuilderTests(unittest.TestCase):
         m = Map(fixture())
         for name in ('TriggerAreas','StandingWaveAreas','CameraAnimationList',
                      'WaypointsList','StandingWaterAreas','RiverAreas','NamedCameras'):
-            m.chunks.append(Chunk(m.intern(name),2 if name in ('StandingWaterAreas','RiverAreas') else 1,bytes(4)))
+            version = {'StandingWaterAreas':2, 'RiverAreas':2, 'StandingWaveAreas':2,
+                       'NamedCameras':2, 'CameraAnimationList':3}.get(name,1)
+            m.chunks.append(Chunk(m.intern(name),version,bytes(4)))
         m.chunks.append(Chunk(m.intern('PlayerScriptsList'),1,b''))
         return m
 

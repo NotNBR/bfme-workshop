@@ -35,7 +35,15 @@ The tail begins with uint32 texture-cell count, blend count, cliff count and tex
 4 * (((y // 2) % size) * size + (x // 2) % size) + (y % 2) * 2 + x % 2
 ```
 
-Two uint32 zero fields follow the texture descriptors. Index zero means no blend; the payload contains blend_count−1 records. Each is 18 bytes: secondary tile uint32, four direction bytes, flags byte, two-sided byte, uint32 legacy value and uint32 0x7ADA0000. The constructor uses 0xFFFFFFFF for the legacy value. Cardinal direction bytes and flip bit are encoded using the OpenSAGE definitions. Native appearance of the new transitions is checked during the material pass. No cliff UV records are currently generated; steep terrain uses ordinary textured geometry.
+Two uint32 fields follow the texture descriptors: edge-texture cell count and
+edge-texture class count, both zero in this build. A nonempty class table follows
+those counts. Index zero means no blend; the payload contains blend_count−1
+records. Each is 18 bytes: secondary tile uint32, four direction bytes, flags
+byte, long-diagonal byte, int32 custom edge class and uint32 0x7ADA0000 marker.
+The constructor uses -1 for no custom edge. Flags expose inversion and forced
+triangle flip. See the later [terrain investigation](worldbuilder-terrain.md)
+for the full table/cliff layout and evidence. This map's constructor generates
+no cliff UV records; steep terrain uses ordinary textured geometry.
 
 The authoring grid explicitly blocks steep faces and high rocky slopes. Route sampling is only a terrain consistency check. It does not prove native battalion clearance, object collision clearance, AI quality or multiplayer balance.
 
@@ -58,7 +66,7 @@ The new map encodes all values explicitly. Its cool ambient fill and subdued war
 
 ## Map discovery and testing
 
-The isolated mod needs a matching `MapCache` entry marked multiplayer with two starts. The actual map file lives at `projects/maps/<name>/<name>.map`, but the tested native command uses the short virtual path `maps\\<name>.map`. Forgetting the cache entry can put a file launch into shell behavior instead of the intended skirmish.
+The isolated mod needs a matching `MapCache` entry marked multiplayer with two starts. The installed map file lives at `runtime/bfme-host/mod/maps/<name>/<name>.map`, but the tested native command uses the short virtual path `maps\\<name>.map`. Forgetting the cache entry can put a file launch into shell behavior instead of the intended skirmish.
 
 The current cache writer uses zlib CRC32, matching the existing working local authoring path. Equivalence to every original EA cache checksum remains unproven. Full paths, byte counts and extents are regenerated after installation.
 

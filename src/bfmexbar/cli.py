@@ -36,6 +36,7 @@ def parser():
     p = argparse.ArgumentParser(description=__doc__)
     commands = p.add_subparsers(dest='command', required=True)
     commands.add_parser('play', help='Launch BFME2; accepts existing launcher flags', add_help=False)
+    commands.add_parser('screenshots', help='Capture native map views and camera evidence', add_help=False)
     commands.add_parser('host', help='Prepare or build the isolated BFME2 runtime').add_argument('action', choices=('build','prepare','prepare-worktree'))
     commands.add_parser('mod', help='Build or check the strategic extension').add_argument('action', choices=('build','check','zoom-check'))
     maps = commands.add_parser('map', help='Build maps or use the authoring toolkit')
@@ -64,6 +65,8 @@ def main(argv=None):
     if rest and rest[0] == '--': rest = rest[1:]
     if args.command == 'play':
         return launch(rest)
+    if args.command == 'screenshots':
+        return invoke('bfmexbar.capture.screenshots',rest)
     if args.command == 'host':
         return invoke('bfmexbar.host.'+{'build':'build','prepare':'prepare','prepare-worktree':'prepare_worktree'}[args.action],rest)
     if args.command == 'mod':

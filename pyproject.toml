@@ -21,4 +21,4 @@ include = ["bfmexbar*", "tools*", "legacy.recoil*"]
 
 
 [tool.setuptools.package-data]
-"bfmexbar.mapkit" = ["*.mjs"]
+"bfmexbar.mapkit" = ["*.mjs", "data/*.json"]

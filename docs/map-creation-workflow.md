@@ -12,6 +12,9 @@ The first actual from-scratch implementation is now [The Ashen March](ashen-marc
 Its [technical log](ashen-march-format-findings.md) records the new-document constructor,
 native validation and remaining editor/playtest limitations. Use that measured path
 where the capability table below still describes the earlier toolset.
+The [mapping reference](mapping-reference.md) is the current index of binary
+layouts, authoring rules and unresolved behavior. Editor operation is optional;
+the required evidence is structural validity and the relevant native behavior.
 
 ## The starting point
 
@@ -21,17 +24,16 @@ flatten or strip the objects from a stock map and call that a new composition.
 The terrain, river network, routes, starts and landmarks must originate in this
 map's design. BFME2's existing textures and object assets remain usable materials.
 
-Prefer WorldBuilder's new-document operation to create the native file container.
-Its engine defaults are document infrastructure, not an inherited landscape.
+Use the native blank-map constructor to create the file container.
+Its explicit defaults are document infrastructure, not an inherited landscape.
 Record the initial empty state before adding starts, water, scenery or gameplay
 objects. Add required starts and player settings in a separate functional pass.
 
 **Current capability:** `tools.worldbuilder.blank` constructs a new native document
 without loading a donor map. Empty, functional and sculpted Ashen March checkpoints
-have passed native BFME2 loading/rendering checks. WorldBuilder open/save remains
-unverified because its control helper could not initialize. Keep that editor gate
-explicitly unverified; do not substitute a stock map or describe native rendering
-as an editor round trip.
+have passed native BFME2 loading/rendering checks. Editor open/save has not been
+verified and is not a required step in this code-based workflow. Do not substitute
+a stock map or describe native rendering as an editor round trip.
 
 ## The painting principle
 
@@ -93,15 +95,15 @@ Create a new native document at the intended dimensions, with one base material
 and a uniform height that leaves room for lower ground and water. Save an immutable
 `00-empty` checkpoint. Inspect it: height minimum equals maximum, no inherited
 scenery, roads, rivers, named locations or custom scripts. Record unavoidable editor
-defaults separately. Keep an editor screenshot, parser report and file hash.
+defaults separately. Keep a diagnostic preview, parser report and file hash.
 
 Make a separate `01-functional` checkpoint containing only the starts, ownership,
-player settings and metadata necessary for a match. Open/save it in WorldBuilder
+player settings and metadata necessary for a match. Validate the records
 and load it in native BFME2. Check the actual dimensions, both starts, basic orders,
 camera coverage and return from the far strategic view. Verify map registration;
 a file that opens into a shell scene is not a successful skirmish startup.
 
-**Produce:** empty and functional checkpoints, provenance, editor evidence and a
+**Produce:** empty and functional checkpoints, provenance, structural evidence and a
 native baseline. **Advance when:** the canvas is demonstrably new and the intended
 size works. Solve format/startup failures before sculpting or decorating.
 
@@ -292,7 +294,7 @@ evidence means unverified, not passed.
 
 ## Pass 10 — Package the finished map
 
-Save the final candidate in WorldBuilder, checkpoint it, inspect the resulting
+Write and checkpoint the final candidate, inspect the resulting
 chunk diff and reload those exact saved bytes in BFME2. Regenerate previews from
 the final geometry; do not copy a stock map's image into a new map's release.
 Package the map and its sidecars consistently, register it locally and test the
@@ -343,17 +345,17 @@ artifacts/<map-id>/               editor/native evidence and diagnostic reports
 
 | Step | Current support | Required boundary |
 |---|---|---|
-| Brand-new native document | `tools.worldbuilder.blank`; native-tested by Ashen March | Preserve the empty checkpoint; editor open/save is still unverified |
+| Brand-new native document | `tools.worldbuilder.blank`; native-tested by Ashen March | Preserve the empty checkpoint and verify generated records |
 | Native inspection and chunk diffs | `tools.worldbuilder.cli` and `analyze` | Lossless parsing does not prove engine semantics |
 | Checkpoints and seeded bulk edits | `checkout`, `apply`, `checkpoint`, `diff` | An existing file is required; for this workflow that must be the new blank document |
 | Raising and flattening terrain | Recipe operations | Broad brushes are tools, not a finished terrain design |
 | Base texture painting | Recipe operation; blank constructor writes palette and cardinal blends | Full corner/three-way WorldBuilder blending is not implemented |
 | Asset placement | Prototype recipes or explicit records through `blank.add_object` | Validate template names against native Object/ChildObject/ObjectReskin declarations and inspect real model footprints |
-| New water, roads, starts and scripts | No general authoring recipe API here | Author through the editor; do not reuse the Ithilien resize path as a blank-map builder |
+| New water, roads, starts and scripts | Starts have a constructor; other records lack a general recipe API | Implement against verified schemas and native cases; script storage decodes but opcode semantics remain incomplete |
 | Registration and scenarios | Current helpers contain map-specific values | Parameterize/test for the new map; `ithilien.cache_entry` and `--battle` are not generic |
 | Native launch | `launch.py --map` accepts a short virtual map path | Install/register the candidate in the isolated mod first |
 | Automated gallery and 8K capture | `--map-check` and `--map-photo` accept `--map-tour` JSON | Configure focus, shots, output and map hash; standalone `map_gallery.py` still targets Ithilien |
-| WorldBuilder UI automation | Adapter exists; previous connection failed | Inspect current tool availability and actual editor state before claiming a UI pass |
+| Format/rule coverage | `bfmexbar.mapkit.coverage` and the mapping reference | A successful decode does not establish every field's meaning or game rule |
 
 After creating the **new blank document**, these are supported commands, run from
 the repository root. Substitute paths and the hash from `status`; angle brackets
@@ -377,3 +379,6 @@ references, but are not this workflow's starting document or original terrain.
 Implementation details: [authoring commands](../src/tools/worldbuilder/README.md),
 [native file structure](map-format.md), and
 [existing map's measured limits](../projects/maps/ithilien-frontier/README.md).
+
+For the editor implementation and remaining terrain work, see
+[WorldBuilder source and terrain records](worldbuilder-terrain.md).

@@ -12,6 +12,36 @@ OpenSAGE's complete license notice is preserved in [OPENSAGE-LICENSE.md](OPENSAG
 
 `src/bfmexbar/formats/` and `src/bfmexbar/mapkit/` use native map layouts cross-checked on 8 October 2026 with OpenSAGE's `HeightMapData`, `BlendTileData`, `BlendTileTexture`, `MapObject`, `AssetPropertyCollection`, `AssetProperty`, and row-padded bit-array reader. It preserves unedited native chunks. The authoring operations, transaction workflow, diagnostic preview and Computer Use session adapter are project code. Retail maps used for local verification remain ignored runtime inputs.
 
+## WorldBuilder terrain research
+
+The section coverage expansion also consults OpenSAGE's `BuildListInfo`,
+`BuildLists`, `SidesList`, camera animation/frame, water/wave, environment,
+post-effect, skybox and global-lighting schemas. The additional layouts and
+unresolved meanings are recorded in the [mapping reference](../mapping-reference.md).
+No retail payloads are included in the synthetic tests.
+
+The script decoder additionally consults OpenSAGE's `Scripting/Script`,
+`ScriptGroup`, `ScriptContent`, `ScriptArgument` and related chunk schemas,
+and Open-BFME-2's parameter/condition/script writers. The independently written
+decoder preserves numeric IDs instead of copying another game's opcode enum.
+See [map scripts](../map-scripts.md) for the source revision and evidence limits.
+
+The bundled `src/bfmexbar/mapkit/data/bfme2-1.06-scripts.json` records compatibility
+metadata extracted from Open-BFME-2's action/condition initializers at revision
+`33f02e4222f3ac9c284d9b71cf5e7438799988bb` and reconciled with local native template
+memory. It retains source file hashes and provenance. It does not redistribute
+retail scripts or executable bytes. Lighting and castle serializers independently
+implement layouts cross-checked against matched routines from the same source;
+see [lighting](../map-lighting.md) and [bases](../map-bases.md).
+
+The independently written terrain decoder and audit tools were cross-checked on
+8 October 2026 against EA's [Generals/Zero Hour WorldBuilder source](https://github.com/electronicarts/CnC_Generals_Zero_Hour),
+particularly `WHeightMapEdit.cpp`, `WorldHeightMap.cpp`, and `TileData.h`, as well
+as OpenSAGE's `BlendDescription` and `CliffTextureMapping`. EA's source is
+copyright Electronic Arts Inc. and distributed under GPL-3.0-or-later; no upstream
+implementation is vendored by this change. The field descriptions, local evidence
+and interpretation limits are recorded in [WorldBuilder terrain](../worldbuilder-terrain.md).
+
 ## Recoil / Spring
 
 Source and releases: https://github.com/beyond-all-reason/RecoilEngine

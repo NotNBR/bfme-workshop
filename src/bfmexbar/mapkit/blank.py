@@ -15,19 +15,27 @@ def add_chunk(m, name, version, data):
 
 
 def lighting():
-    # Nine lights per time of day: terrain, objects, infantry for each direction.
+    from bfmexbar.formats.lighting import encode, slots
+
+    # Retail order: terrain sun, object sun/fills, terrain fills, third array.
     # Raking sunlight and restrained fill reveal terrain and model volume.
-    out = bytearray(struct.pack('<I', 2))
+    configurations = []
     for _ in range(4):
-        for ambient, color, direction in [
+        sources = [
             ((.18,.19,.215),(.70,.65,.56),(.64,.54,-.55)),
             ((0,0,0),(.045,.06,.085),(-.65,-.3,-.70)),
-            ((0,0,0),(.015,.02,.025),(.2,-.9,-.38))]:
-            for target in range(3):
-                gain = 1.10 if target else 1.0
-                out += struct.pack('<9f',*ambient,*(v*gain for v in color),*direction)
-    # BFME2 v8 legacy shadow/fog defaults, encoded explicitly (no opaque donor).
-    out += struct.pack('<II9fI3f',0x80000000,0,*([.15686275]*3),*([.4980392]*6),0xFFA0A0A0,1,1,1)
+            ((0,0,0),(.015,.02,.025),(.2,-.9,-.38))]
+        lights = []
+        for target, index in slots(8):
+            ambient, color, direction = sources[index]
+            gain = 1.0 if target == 'terrain' else 1.10
+            lights.append(dict(target=target, light_index=index, ambient=ambient,
+                               diffuse=tuple(v*gain for v in color), direction=direction))
+        configurations.append(lights)
+    out = encode(dict(time_of_day=2, configurations=configurations,
+                      overbright_value=1.0, chunk_flag_raw=0,
+                      vector_triplets=[(.15686275,)*3, (.4980392,)*3, (.4980392,)*3],
+                      shadow_color_raw=0xFFA0A0A0, final_values=(1., 1., 1.)))
     assert len(out)==1360
     return bytes(out)
 

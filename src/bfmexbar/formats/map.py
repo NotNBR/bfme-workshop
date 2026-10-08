@@ -192,9 +192,9 @@ class Map:
         return dict(width=w, height=h, border=border, borders=borders, offset=offset,
                     elevations=elevations)
 
-    def blend(self):
+    def blend(self, *, inspection=False):
         c, terrain = self.chunk('BlendTileData'), self.heightmap()
-        if c.version != 18:
+        if c.version != 18 and not (inspection and 8 <= c.version <= 17):
             raise ValueError('Only BFME2 BlendTileData v18 is editable')
         w, h = terrain['width'], terrain['height']
         area = w * h
@@ -202,10 +202,14 @@ class Map:
         if r.get('I')[0] != area:
             raise ValueError('Blend/height dimensions disagree')
         arrays, offsets = {}, {}
-        for name, dtype in [('tiles', '<u2'), ('blends', '<u4'), ('three_way', '<u4'), ('cliffs', '<u4')]:
+        index_type = '<u4' if c.version >= 14 else '<u2'
+        for name, dtype in [('tiles', '<u2'), ('blends', index_type), ('three_way', index_type), ('cliffs', index_type)]:
             offsets[name] = r.pos
             arrays[name] = np.frombuffer(r.take(area * np.dtype(dtype).itemsize), dtype=dtype).reshape(h, w)
-        for name in ['impassable', 'impassable_players', 'passage_widths', 'taintable', 'extra_passable', 'flammability', 'visible']:
+        plane_names = [name for name, minimum in [('impassable', 8), ('impassable_players', 10),
+            ('passage_widths', 11), ('taintable', 14), ('extra_passable', 15),
+            ('flammability', 16), ('visible', 17)] if c.version >= minimum]
+        for name in plane_names:
             offsets[name] = r.pos
             if name == 'flammability':
                 arrays[name] = np.frombuffer(r.take(area), dtype='u1').reshape(h, w)
@@ -225,16 +229,21 @@ class Map:
             textures.append(dict(name=name, cell_start=start, cell_size=size,
                                  tile_start=tile_start, tile_count=4 * count))
             tile_start += 4 * count
-        if arrays['tiles'].max() >= tile_start:
-            raise ValueError('Tile index outside texture palette')
-        if arrays['blends'].max() >= max(blends, 1) or arrays['three_way'].max() >= max(blends, 1):
-            raise ValueError('Blend index outside palette')
-        if arrays['cliffs'].max() >= max(cliffs, 1):
-            raise ValueError('Cliff index outside palette')
-        return dict(arrays=arrays, offsets=offsets, textures=textures, tail_offset=tail_offset)
+        issues = {}
+        for field, limit, message in [('tiles', tile_start, 'Tile index outside texture palette'),
+                ('blends', max(blends, 1), 'Blend index outside palette'),
+                ('three_way', max(blends, 1), 'Blend index outside palette'),
+                ('cliffs', max(cliffs, 1), 'Cliff index outside palette')]:
+            invalid = int(np.count_nonzero(arrays[field] >= limit))
+            if invalid:
+                if not inspection:
+                    raise ValueError(message)
+                issues[field + '_outside_palette'] = invalid
+        return dict(arrays=arrays, offsets=offsets, textures=textures, tail_offset=tail_offset,
+                    inspection_issues=issues, version=c.version)
 
-    def report(self):
-        t, b, objects = self.heightmap(), self.blend(), self.objects()
+    def report(self, *, inspection=False):
+        t, b, objects = self.heightmap(), self.blend(inspection=inspection), self.objects()
         heights = t['elevations'] * 0.0390625
         pw, ph = t['width'] - 2 * t['border'], t['height'] - 2 * t['border']
         r = Reader(self.chunk('WorldInfo').data)
@@ -255,7 +264,7 @@ class Map:
                                     world_extent=[pw * 10, ph * 10], borders=t['borders']),
                     height_range=[float(heights.min()), float(heights.max())],
                     objects=len(objects), templates=dict(Counter(o['template'] for o in objects).most_common()),
-                    textures=b['textures'], world=world, warnings=warnings,
+                    textures=b['textures'], world=world, warnings=warnings, terrain_issues=b['inspection_issues'],
                     chunks=[dict(name=self.names[c.name_id], version=c.version, size=len(c.data), sha256=sha(c.data)) for c in self.chunks])
 
 
