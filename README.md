@@ -56,6 +56,8 @@ The launcher checks the exact BFME2 1.06 binary hash before using the recovered 
 
 The runtime check requires actual skirmish mode, at least 100 advancing simulation frames, no crash, a nonblank game window, and unchanged source installation / original profile. Its report and screenshot are saved in `runtime/bfme-host/verification`. Automated checks close their own game after the run. `-CameraTrace` records camera properties throughout movement to `runtime/bfme-host/verification/camera-trace.csv`; see the host integration notes for plotting and interpretation.
 
+For designing an original map from an empty plane, see the [rough-to-polished map creation workflow](docs/map-creation-workflow.md) and its [worked theme example](docs/map-workflow-example.md).
+
 ## Project layout
 
 - `tools/worldbuilder/`: repeatable native map edits, scenery recipes, previews, checkpoints, and a WorldBuilder UI adapter. See [the authoring workflow](tools/worldbuilder/README.md) for commands and verification limits.
