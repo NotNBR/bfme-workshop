@@ -319,7 +319,7 @@ Question being resolved:
 Input checkpoint and SHA256:
 Change and reason:
 Expected visual and gameplay effect:
-Actual evidence: editor view, native views, route test, measurements
+Actual evidence: editor view, src/native views, route test, measurements
 Decision: keep / revise / discard
 Failed or unverified gates:
 Next smallest useful change:
@@ -334,8 +334,8 @@ Use a fixed seed while tuning placement rules so comparisons remain meaningful.
 Suggested storage:
 
 ```text
-maps/<map-id>/                    brief, layout decisions, recipes, release notes
-runtime/worldbuilder/<map-id>/    working native file, checkpoints, transactions
+projects/maps/<map-id>/                    brief, layout decisions, recipes, release notes
+runtime/worldbuilder/<map-id>/    working src/native file, checkpoints, transactions
 artifacts/<map-id>/               editor/native evidence and diagnostic reports
 ```
 
@@ -374,6 +374,6 @@ evidence separately; do not relabel a checkpoint note as a verified editor save.
 The source-specific `ithilien` and `relief` generators are useful lessons and code
 references, but are not this workflow's starting document or original terrain.
 
-Implementation details: [authoring commands](../tools/worldbuilder/README.md),
+Implementation details: [authoring commands](../src/tools/worldbuilder/README.md),
 [native file structure](map-format.md), and
-[existing map's measured limits](../maps/ithilien-frontier/README.md).
+[existing map's measured limits](../projects/maps/ithilien-frontier/README.md).

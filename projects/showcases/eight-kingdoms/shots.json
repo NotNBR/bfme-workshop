@@ -1,0 +1,168 @@
+[
+  {
+    "start": [
+      5700,
+      8500
+    ],
+    "end": [
+      5700,
+      8250
+    ],
+    "span": [
+      9800,
+      9000
+    ],
+    "elevation": [
+      90,
+      90
+    ],
+    "strategic": true,
+    "frames": 240
+  },
+  {
+    "start": [
+      5700,
+      8250
+    ],
+    "end": {
+      "front": 0
+    },
+    "span": [
+      9000,
+      2050
+    ],
+    "elevation": [
+      90,
+      54
+    ],
+    "strategic": true,
+    "frames": 240
+  },
+  {
+    "start": {
+      "front": 0
+    },
+    "end": {
+      "front": 0,
+      "offset": [
+        -65,
+        40
+      ]
+    },
+    "span": [
+      2050,
+      1650
+    ],
+    "elevation": [
+      54,
+      51
+    ],
+    "frames": 240
+  },
+  {
+    "start": {
+      "front": 1
+    },
+    "end": {
+      "front": 1,
+      "offset": [
+        60,
+        -45
+      ]
+    },
+    "span": [
+      1750,
+      1320
+    ],
+    "elevation": [
+      54,
+      51
+    ],
+    "frames": 240
+  },
+  {
+    "start": [
+      5700,
+      6500
+    ],
+    "end": [
+      5800,
+      5850
+    ],
+    "span": [
+      10000,
+      9000
+    ],
+    "elevation": [
+      90,
+      90
+    ],
+    "strategic": true,
+    "frames": 240
+  },
+  {
+    "start": {
+      "front": 2
+    },
+    "end": {
+      "front": 2,
+      "offset": [
+        -45,
+        50
+      ]
+    },
+    "span": [
+      1750,
+      1380
+    ],
+    "elevation": [
+      54,
+      51
+    ],
+    "frames": 240
+  },
+  {
+    "start": {
+      "front": 3
+    },
+    "end": {
+      "front": 3,
+      "offset": [
+        60,
+        -40
+      ]
+    },
+    "span": [
+      2050,
+      1550
+    ],
+    "elevation": [
+      54,
+      51
+    ],
+    "frames": 240
+  },
+  {
+    "start": {
+      "front": 3,
+      "offset": [
+        60,
+        -40
+      ]
+    },
+    "end": [
+      5700,
+      4300
+    ],
+    "span": [
+      1550,
+      10000
+    ],
+    "elevation": [
+      51,
+      90
+    ],
+    "strategic": true,
+    "frames": 240
+  }
+]

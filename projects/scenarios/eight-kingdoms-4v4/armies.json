@@ -1,0 +1,100 @@
+{
+  "factions": [
+    "Men",
+    "Elves",
+    "Dwarves",
+    "Men",
+    "Mordor",
+    "Isengard",
+    "Wild",
+    "Mordor"
+  ],
+  "templates": [
+    [
+      "GondorFighterHorde",
+      "GondorArcherHorde",
+      "GondorTowerShieldGuardHorde",
+      "GondorBoromir"
+    ],
+    [
+      "ElvenLorienWarriorHorde",
+      "ElvenLorienArcherHorde",
+      "ElvenMithlondSentryHorde",
+      "ElvenHaldir"
+    ],
+    [
+      "DwarvenGuardianHorde",
+      "DwarvenAxeThrowerHorde",
+      "DwarvenPhalanxHorde",
+      "DwarvenGimli"
+    ],
+    [
+      "GondorFighterHorde",
+      "GondorArcherHorde",
+      "GondorTowerShieldGuardHorde",
+      "GondorFaramir"
+    ],
+    [
+      "MordorFighterHorde",
+      "MordorArcherHorde",
+      "MordorEasterlingHorde",
+      "MordorMouthOfSauron"
+    ],
+    [
+      "IsengardFighterHorde",
+      "IsengardUrukCrossbowHorde",
+      "IsengardPikemanHorde",
+      "IsengardLurtz"
+    ],
+    [
+      "GoblinFighterHorde",
+      "GoblinArcherHorde",
+      "GoblinSpiderRiderHorde",
+      "WildShelob"
+    ],
+    [
+      "MordorFighterHorde",
+      "MordorArcherHorde",
+      "MordorEasterlingHorde",
+      "MordorMouthOfSauron"
+    ]
+  ],
+  "heavies": {
+    "Men": [
+      "GondorTrebuchet",
+      "GondorTrebuchet",
+      "GondorTrebuchet",
+      "GondorTrebuchet"
+    ],
+    "Elves": [
+      "RohanEntFir",
+      "RohanEntBirch",
+      "RohanEntFir",
+      "RohanEntBirch"
+    ],
+    "Dwarves": [
+      "DwarvenCatapult",
+      "DwarvenCatapult",
+      "DwarvenDemolisher",
+      "DwarvenDemolisher"
+    ],
+    "Mordor": [
+      "MordorCatapult",
+      "MordorCatapult",
+      "MordorAttackTroll",
+      "MordorAttackTroll"
+    ],
+    "Isengard": [
+      "IsengardBallista",
+      "IsengardBallista",
+      "IsengardBallista",
+      "IsengardBatteringRam"
+    ],
+    "Wild": [
+      "WildMountainGiant",
+      "WildMountainGiant",
+      "GoblinCaveTroll",
+      "GoblinCaveTroll"
+    ]
+  }
+}

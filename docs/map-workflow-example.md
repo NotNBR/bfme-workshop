@@ -119,7 +119,7 @@ Input checkpoint and SHA256: fill from the actual saved candidate
 Change: broaden the saddle floor and soften its southern approach
 Reason: preserve the ridge silhouette while increasing maneuvering space
 Expected effect: less congestion; unchanged route choice
-Evidence required: both-direction native movement clip, actual travel times,
+Evidence required: both-direction src/native movement clip, actual travel times,
                    near view and fixed-camera whole-map comparison
 Decision: pending evidence
 Next change: none until the proposed change has been inspected

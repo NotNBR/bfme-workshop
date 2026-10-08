@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import { WorldBuilderSession } from '../tools/worldbuilder/sky-session.mjs';
+import { WorldBuilderSession } from '../src/tools/worldbuilder/sky-session.mjs';
 
 const window = {id: 42, app: 'D:\\game\\Worldbuilder.exe', title: 'WorldBuilder'};
 let inputs = 0;

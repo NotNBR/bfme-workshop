@@ -1,0 +1,9 @@
+schema = 1
+id = "eight-kingdoms"
+native_name = "map mp bfmexbar eight kingdoms"
+title = "Eight Kingdoms"
+width = 900
+height = 960
+border = 150
+native_border = 30
+seed = 82165

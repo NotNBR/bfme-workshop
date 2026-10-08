@@ -1,0 +1,7 @@
+schema = 1
+id = "eight-kingdoms-4v4"
+map = "eight-kingdoms"
+players = 8
+armies = "armies.json"
+buildings = "buildings.json"
+deployments = "deployments.json"

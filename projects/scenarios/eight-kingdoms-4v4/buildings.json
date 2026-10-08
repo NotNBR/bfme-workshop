@@ -1,0 +1,62 @@
+{
+  "Men": [
+    "GondorFarm",
+    "GondorFarm",
+    "GondorFarm",
+    "GondorBarracks",
+    "GondorArcherRange",
+    "GondorStable",
+    "GondorForge",
+    "GondorBattleTower"
+  ],
+  "Elves": [
+    "ElvenMallornTree",
+    "ElvenMallornTree",
+    "ElvenMallornTree",
+    "ElvenBarracks",
+    "ElvenGreenPasture",
+    "EregionForge",
+    "ElvenEntMoot",
+    "ElvenBattleTower"
+  ],
+  "Dwarves": [
+    "DwarvenMineShaft",
+    "DwarvenMineShaft",
+    "DwarvenMineShaft",
+    "DwarfBarracks",
+    "DwarvenArcheryRange",
+    "DwarvenSiegeWorks",
+    "DwarvenHearth",
+    "DwarvenSentryTower"
+  ],
+  "Mordor": [
+    "MordorSlaughterHouse",
+    "MordorSlaughterHouse",
+    "MordorSlaughterHouse",
+    "MordorOrcPit",
+    "MordorHaradrimPalace",
+    "MordorTrollCage",
+    "MordorSiegeWorks",
+    "MordorBattleTower"
+  ],
+  "Isengard": [
+    "IsengardFurnace",
+    "IsengardFurnace",
+    "IsengardFurnace",
+    "IsengardUrukPit",
+    "IsengardWargPit",
+    "IsengardSiegeWorks",
+    "IsengardArmory",
+    "IsengardBattleTower"
+  ],
+  "Wild": [
+    "WildMineShaft",
+    "WildMineShaft",
+    "WildMineShaft",
+    "GoblinCave",
+    "GoblinFissure",
+    "WildSpiderPit",
+    "WildTreasureTrove",
+    "WildSentryTower"
+  ]
+}

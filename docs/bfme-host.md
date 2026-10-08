@@ -6,7 +6,7 @@ BFME2 owns rendering, simulation, animation, locomotion, formations, selection, 
 
 The reference launcher uses `D:\LAN\lotrbfme2\local\bfme2`. Its `apt/` directory contains the native menus; the incomplete `D:\LAN\bfme2` installation used in the first attempt lacked those resources.
 
-`tools/bfme_host/launch.py` imports the existing `openbfme2/tools/game_smoke.py` and `boot_smoke.py` helpers with bytecode writing disabled, and redirects their outputs into this project's runtime. Their Win32 debugger follows the original launcher into `game.dat`, applies the XP-version compatibility fix, redirects AppData, and prevents background focus changes from freezing loading.
+`src/tools/bfme_host/launch.py` imports the existing `openbfme2/tools/game_smoke.py` and `boot_smoke.py` helpers with bytecode writing disabled, and redirects their outputs into this project's runtime. Their Win32 debugger follows the original launcher into `game.dat`, applies the XP-version compatibility fix, redirects AppData, and prevents background focus changes from freezing loading.
 
 Raw retail `-file` startup leaves the game-info pointer unset and player templates in observer state. The reference `fileSlotsSet` hook fills those slots before the native engine starts the match. The default entry point uses a human faction versus easy AI on Udun.
 
@@ -37,7 +37,7 @@ Twenty-fourfold zoom limits and fourfold multiplayer command-point ceilings are 
 
 ## Orthographic view and symbols
 
-`native/host/strategic.cpp` compiles to a project-local 32-bit DLL. The launcher loads it on the game's own main thread through the existing debug call helper. Five complete, fingerprinted instruction spans are intercepted: `W3DView::setCameraTransform` (RVA 0x8BE6B), `W3DView::getPickRay` (0x89658), `DX8Wrapper::End_Scene` (0x122BE0), `W3DView::updateView` (0x85B36), and the native drawable UI-queue helper (0x239FCC). Original instructions run through trampolines, and disk binaries stay unchanged.
+`src/native/host/strategic.cpp` compiles to a project-local 32-bit DLL. The launcher loads it on the game's own main thread through the existing debug call helper. Five complete, fingerprinted instruction spans are intercepted: `W3DView::setCameraTransform` (RVA 0x8BE6B), `W3DView::getPickRay` (0x89658), `DX8Wrapper::End_Scene` (0x122BE0), `W3DView::updateView` (0x85B36), and the native drawable UI-queue helper (0x239FCC). Original instructions run through trampolines, and disk binaries stay unchanged.
 
 Between measured native heights 800 and 2600, a smoothstep plus a critically damped, per-frame tilt response moves the tactical camera overhead. Symbols fade in separately from height 1400 to 2000. Once the tilt settles overhead, the native camera switches to orthographic projection. The response rate is 18/s (approximately 0.26 seconds to complete 95% of a step). BFME2 retains its own zoom interpolation. The orthographic plane matches the perspective plane's ground scale at the transition. Zooming in restores the original camera transform/projection. Only TheTacticalView is changed; other view instances and the cursor camera are excluded.
 
@@ -61,7 +61,7 @@ The camera regression check subsequently reached actual heights 300 and 2400, re
 
 `start.ps1 -ZoomCheck` calls BFME2's native camera-height setter at a normal height of 300 and at the current map's maximum height, captures both views, records actual heights and near/far planes, and runs the same skirmish checks. The native setter is invoked on the game thread through the reference debugger's call helper. Screenshots must also be visually inspected: a nonblank HUD alone cannot prove the terrain is visible. A preliminary wheel-message test was inconclusive because it did not establish that the camera moved.
 
-Source dependencies remain in the adjacent openbfme2 checkout, read only. See that checkout's license and the existing [third-party notices](../native/THIRD_PARTY.md) for the reverse-engineered and format references. Python dependencies are pinned in `tools/bfme_host/requirements.txt`.
+Source dependencies remain in the adjacent openbfme2 checkout, read only. See that checkout's license and the existing [third-party notices](../src/native/THIRD_PARTY.md) for the reverse-engineered and format references. Python dependencies are pinned in `src/tools/bfme_host/requirements.txt`.
 
 ## Camera movement tracing and health bars
 
@@ -80,7 +80,7 @@ The strategic regression selects an owned, visible starting structure, checks it
 Plot a saved trace with the optional plotting dependency `matplotlib==3.10.7`:
 
 ```powershell
-.\.venv\Scripts\python.exe tools/bfme_host/camera_trace.py artifacts/bfme-host/camera-trace/after-fix.csv --before artifacts/bfme-host/camera-trace/before-fix.csv --output artifacts/bfme-host/camera-trace/camera-movement
+.\.venv\Scripts\python.exe src/tools/bfme_host/camera_trace.py artifacts/bfme-host/camera-trace/after-fix.csv --before artifacts/bfme-host/camera-trace/before-fix.csv --output artifacts/bfme-host/camera-trace/camera-movement
 ```
 
 This writes a PNG and JSON summary. The plot uses only final rendered-frame samples; intermediate native transforms are retained in the CSV for diagnosis.

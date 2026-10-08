@@ -1,6 +1,10 @@
 # bfmeXbar
 
-**New original map:** [The Ashen March](docs/ashen-march.md), a dark Gondorian frontier with broken ridges, ruined watches and a deadwood flank. Run **Launch Ashen March.cmd**. [Technical findings](docs/ashen-march-format-findings.md) document its from-scratch construction.
+**Development layout:** [Repository guide](docs/repository-layout.md) | [Strategic mod](projects/strategic/README.md) | [Map projects](projects/maps/eight-kingdoms/README.md) | [Battle scenario](projects/scenarios/eight-kingdoms-4v4/README.md) | [Showcase](projects/showcases/eight-kingdoms/README.md)
+
+**Eight-player map:** [Eight Kingdoms](projects/maps/eight-kingdoms/README.md) follows the supplied reference terrain. Run **scripts/launchers/Launch Eight Kingdoms.cmd** for one human against seven easy AIs.
+
+**New original map:** [The Ashen March](docs/ashen-march.md), a dark Gondorian frontier with broken ridges, ruined watches and a deadwood flank. Run **scripts/launchers/Launch Ashen March.cmd**. [Technical findings](docs/ashen-march-format-findings.md) document its from-scratch construction.
 
 BFME2 remains the running game. Its native animation, skinning, movement, formations, cursor, combat and interface are preserved. Far zoom now transitions to an orthographic strategic view with unit and building symbols. The extension also increases camera zoom bounds and command-point ceilings; extreme-scale simulation work is still in development.
 
@@ -9,13 +13,13 @@ BFME2 remains the running game. Its native animation, skinning, movement, format
 Double-click **Launch bfmeXbar.cmd**. The launcher uses the `openbfme2` compatibility and skirmish initialization code to start a native human-versus-easy-AI match on Udun. Factions are random. Use the original BFME2 controls, including the mouse wheel for zoom.
 
 ```powershell
-.\tools\bfme_host\start.ps1 -Window
-.\tools\bfme_host\start.ps1 -Window -Menu
+.\src\tools\bfme_host\start.ps1 -Window
+.\src\tools\bfme_host\start.ps1 -Window -Menu
 ```
 
-For a prepared battle, use **Launch Orcs vs Elves.cmd** (or `start.ps1 -Window -Battle orcs-elves`). Grey Mountains opens with Mordor and Elven troops fighting in the central valley. Both sides have their original fortress plus eight resource, production and defensive buildings. The map is fully revealed. Twelve Mordor and eight Elven battalions open the battle; ten Mordor and four Elven reserve battalions march from their bases in four staggered groups. The Witch-king and Mouth of Sauron lead Mordor; Haldir and Glorfindel lead the Elves. All four heroes join the opening fight. The armies use native movement, formations and combat, and remain controllable.
+For a prepared battle, use **scripts/launchers/Launch Orcs vs Elves.cmd** (or `start.ps1 -Window -Battle orcs-elves`). Grey Mountains opens with Mordor and Elven troops fighting in the central valley. Both sides have their original fortress plus eight resource, production and defensive buildings. The map is fully revealed. Twelve Mordor and eight Elven battalions open the battle; ten Mordor and four Elven reserve battalions march from their bases in four staggered groups. The Witch-king and Mouth of Sauron lead Mordor; Haldir and Glorfindel lead the Elves. All four heroes join the opening fight. The armies use native movement, formations and combat, and remain controllable.
 
-For the new large map, use **Launch Ithilien Frontier.cmd**. [Ithilien Frontier](maps/ithilien-frontier/README.md) expands the native Ithilien landscape to 840 x 953 playable tiles, about three times Grey Mountains' area, with sculpted ridges, mountain walls, rolling hills and 4,111 additional trees, plants, rocks and ruins. It starts a fully revealed Mordor-versus-Elves skirmish with normal base-building and a strategic camera ceiling of 16,000. Setup also builds and registers this map. Native load/render checks passed; long-match performance and crossing pathfinding still need playtesting.
+For the new large map, use **scripts/launchers/Launch Ithilien Frontier.cmd**. [Ithilien Frontier](projects/maps/ithilien-frontier/README.md) expands the native Ithilien landscape to 840 x 953 playable tiles, about three times Grey Mountains' area, with sculpted ridges, mountain walls, rolling hills and 4,111 additional trees, plants, rocks and ruins. It starts a fully revealed Mordor-versus-Elves skirmish with normal base-building and a strategic camera ceiling of 16,000. Setup also builds and registers this map. Native load/render checks passed; long-match performance and crossing pathfinding still need playtesting.
 
 The default entry point is now BFME2. Earlier Recoil and browser experiments are retained as reference code.
 
@@ -25,10 +29,10 @@ Selection, box selection, the cursor and orders still run through BFME2. Orthogr
 
 ## Setup
 
-Run **Setup bfmeXbar.cmd**. On this machine it reads the complete installation at `D:\LAN\lotrbfme2\local\bfme2` and uses the adjacent `D:\LAN\openbfme2\tools` launch helpers. The previously used `D:\LAN\bfme2` directory lacked the APT menu assets.
+Run **scripts/launchers/Setup bfmeXbar.cmd**. On this machine it reads the complete installation at `D:\LAN\lotrbfme2\local\bfme2` and uses the adjacent `D:\LAN\openbfme2\tools` launch helpers. The previously used `D:\LAN\bfme2` directory lacked the APT menu assets.
 
 ```powershell
-.\tools\bfme_host\setup.ps1 -BfmePath 'D:\LAN\lotrbfme2\local\bfme2' -ZoomFactor 24 -ArmyFactor 4
+.\src\tools\bfme_host\setup.ps1 -BfmePath 'D:\LAN\lotrbfme2\local\bfme2' -ZoomFactor 24 -ArmyFactor 4
 ```
 
 Setup creates a project Python environment, installs the pinned dependencies, copies the complete game into `runtime/bfme-host/game`, and builds a local mod. This needs roughly 5 GB of disk space. Proprietary game files, generated mods, profiles and logs remain ignored by Git. The original installation and `openbfme2` source are read only.
@@ -50,10 +54,10 @@ The launcher checks the exact BFME2 1.06 binary hash before using the recovered 
 
 ```powershell
 .\.venv\Scripts\python.exe -m unittest tests.test_bfme_host -v
-.\tools\bfme_host\start.ps1 -Test
-.\tools\bfme_host\start.ps1 -ZoomCheck
-.\tools\bfme_host\start.ps1 -StrategicCheck
-.\tools\bfme_host\start.ps1 -Window -CameraTrace
+.\src\tools\bfme_host\start.ps1 -Test
+.\src\tools\bfme_host\start.ps1 -ZoomCheck
+.\src\tools\bfme_host\start.ps1 -StrategicCheck
+.\src\tools\bfme_host\start.ps1 -Window -CameraTrace
 ```
 
 The runtime check requires actual skirmish mode, at least 100 advancing simulation frames, no crash, a nonblank game window, and unchanged source installation / original profile. Its report and screenshot are saved in `runtime/bfme-host/verification`. Automated checks close their own game after the run. `-CameraTrace` records camera properties throughout movement to `runtime/bfme-host/verification/camera-trace.csv`; see the host integration notes for plotting and interpretation.
@@ -62,19 +66,22 @@ For designing an original map from an empty plane, see the [rough-to-polished ma
 
 ## Project layout
 
-- `tools/worldbuilder/`: repeatable native map edits, scenery recipes, previews, checkpoints, and a WorldBuilder UI adapter. See [the authoring workflow](tools/worldbuilder/README.md) for commands and verification limits.
+The root has seven folders. [The repository guide](docs/repository-layout.md)
+explains the commands and the folders inside each workstream.
 
-- `tools/bfme_host/`: original-game launcher, isolated runtime preparation, map-camera and command-limit builder.
-- `tests/test_bfme_host.py`: binary-map preservation and decoder/cap checks.
-- `tools/import_bfme.py`: shared BIG archive reader.
-- `native/host/`: BFME2 strategic camera, picking and symbol-rendering extension.
-- `native/game/`, `native/client.lua` and `tools/native/`: previous Recoil experiment; not the default launcher.
-- `legacy/browser/`: archived browser prototype, also preserved at Git tag `browser-prototype`.
+- `projects/`: strategic patch, maps, scenarios and showcases.
+- `src/`: shared Python/native code, compatibility modules and legacy experiments.
+- `scripts/`: setup, CLI, configuration and specialized launchers.
+- `tests/`: unit, integration and native verification.
+- `docs/`: documentation and license notices.
+- `runtime/`: ignored local game/runtime files.
+- `artifacts/`: ignored generated maps, videos and validation reports.
 
-See [the host integration notes](docs/bfme-host.md) and [earlier engine research](docs/native-integration.md). Original game assets are not distributed in this repository.
+The main launcher stays at the root. Other launch and setup shortcuts are in
+`scripts/launchers/`. Previous video paths remain unchanged.
 
 ## Gameplay showcase
 
-`python tools/bfme_host/launch.py --showcase` starts the prepared battle and records a 29-second camera tour at 1600 x 1200 / 30 fps. Install the optional recording dependency with `pip install imageio-ffmpeg==0.6.0`. It records the game window only, without audio. The tour opens with a gentle pan and rotation, settles at its original bearing, zooms out in two stages, then returns to the close-up. The camera returns to player control after 30 seconds; ordinary launches never enable the tour. The raw recording and diagnostics are saved in `artifacts/showcase/`.
+`python src/tools/bfme_host/launch.py --showcase` starts the prepared battle and records a 29-second camera tour at 1600 x 1200 / 30 fps. Install the optional recording dependency with `pip install imageio-ffmpeg==0.6.0`. It records the game window only, without audio. The tour opens with a gentle pan and rotation, settles at its original bearing, zooms out in two stages, then returns to the close-up. The camera returns to player control after 30 seconds; ordinary launches never enable the tour. The raw recording and diagnostics are saved in `artifacts/showcase/`.
 
-Run `python tools/bfme_host/finish_showcase.py` after the recorder finishes to export the video without added captions as `artifacts/showcase/bfmeXbar-gameplay-showcase.mp4`. The completed showcase is 29 seconds of continuous gameplay at 30 fps, with no audio.
+Run `python src/tools/bfme_host/finish_showcase.py` after the recorder finishes to export the video without added captions as `artifacts/showcase/bfmeXbar-gameplay-showcase.mp4`. The completed showcase is 29 seconds of continuous gameplay at 30 fps, with no audio.

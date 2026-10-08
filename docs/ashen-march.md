@@ -45,11 +45,11 @@ Checkpoints and hashes are in `runtime/worldbuilder/ashen-march/checkpoints`. St
 
 ## Run and rebuild
 
-Double-click **Launch Ashen March.cmd** for Mordor versus Elves with revealed terrain and strategic controls. This starts a normal skirmish on the new landscape. The Grey Mountains prepared battle remains its own preset.
+Double-click **scripts/launchers/Launch Ashen March.cmd** for Mordor versus Elves with revealed terrain and strategic controls. This starts a normal skirmish on the new landscape. The Grey Mountains prepared battle remains its own preset.
 
 ```powershell
 .venv/Scripts/python.exe -m tools.worldbuilder.ashen --phase polish
-.venv/Scripts/python.exe tools/bfme_host/launch.py --ashen
+.venv/Scripts/python.exe src/tools/bfme_host/launch.py --ashen
 ```
 
 Native map: `runtime/bfme-host/mod/maps/map mp bfmexbar ashen march/map mp bfmexbar ashen march.map`.
@@ -57,7 +57,7 @@ Native map: `runtime/bfme-host/mod/maps/map mp bfmexbar ashen march/map mp bfmex
 Four-view native verification:
 
 ```powershell
-.venv/Scripts/python.exe tools/bfme_host/launch.py --window --map-check --map 'maps\map mp bfmexbar ashen march.map' --map-tour artifacts/ashen-march/tour.json
+.venv/Scripts/python.exe src/tools/bfme_host/launch.py --window --map-check --map 'maps\map mp bfmexbar ashen march.map' --map-tour artifacts/ashen-march/tour.json
 ```
 
 Use `--map-photo` instead of `--map-check` for the native 8K portrait. It tiles BFME2's renderer; the simulation continues between tiles.

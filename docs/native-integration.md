@@ -35,7 +35,7 @@ Local BFME II: INI.big + W3D.big + Textures*.big
                        |
      S3O bone pieces + texture atlas + sampled pose tables
                        |
-       Recoil 2026.07.04 native renderer and simulation
+       Recoil 2026.07.04 src/native renderer and simulation
 ```
 
 BFME's skin vertices are stored in bone-local coordinates. The importer rebases each triangle to its selected bone, transforms Z-up/X-forward into Recoil's Y-up/Z-forward basis, and preserves face winding. The animation decoder handles BFME motion channels with time codes and 4/8-bit adaptive deltas. It composes animated offsets with the rest hierarchy and converts resulting poses to native script translation and Y-X-Z rotation.

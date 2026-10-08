@@ -6,3 +6,7 @@ artifacts/
 .cache/
 runtime/
 .venv/
+scripts/config.local.toml
+*.egg-info/
+build/
+dist/

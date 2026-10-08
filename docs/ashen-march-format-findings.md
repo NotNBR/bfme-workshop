@@ -4,7 +4,7 @@ Work log, 8 October 2026. Scope: the verified BFME2 1.06 executable used by bfme
 
 ## From-scratch document construction
 
-`tools/worldbuilder/blank.py` constructs a fresh name table and all 20 top-level chunks. It does not open a donor map. `ashen.py` adds original coordinates, elevations, materials and objects. Installed game assets supply meshes and textures, not a landscape layout.
+`src/tools/worldbuilder/blank.py` constructs a fresh name table and all 20 top-level chunks. It does not open a donor map. `ashen.py` adds original coordinates, elevations, materials and objects. Installed game assets supply meshes and textures, not a landscape layout.
 
 The `00-empty.map` checkpoint contains a uniform 100-unit plane, one terrain texture and no objects, water, roads or custom scripts. `01-functional.map` adds exactly two start waypoints. Checkpoints and hashes are in `runtime/worldbuilder/ashen-march/checkpoints/`. Native empty-map evidence is in `artifacts/ashen-march/01-functional/native-validation.json`.
 
@@ -58,7 +58,7 @@ The new map encodes all values explicitly. Its cool ambient fill and subdued war
 
 ## Map discovery and testing
 
-The isolated mod needs a matching `MapCache` entry marked multiplayer with two starts. The actual map file lives at `maps/<name>/<name>.map`, but the tested native command uses the short virtual path `maps\\<name>.map`. Forgetting the cache entry can put a file launch into shell behavior instead of the intended skirmish.
+The isolated mod needs a matching `MapCache` entry marked multiplayer with two starts. The actual map file lives at `projects/maps/<name>/<name>.map`, but the tested native command uses the short virtual path `maps\\<name>.map`. Forgetting the cache entry can put a file launch into shell behavior instead of the intended skirmish.
 
 The current cache writer uses zlib CRC32, matching the existing working local authoring path. Equivalence to every original EA cache checksum remains unproven. Full paths, byte counts and extents are regenerated after installation.
 
@@ -66,7 +66,7 @@ Native QA uses the existing extension's opt-in render-target readback and persis
 
 ## References and implementation provenance
 
-Container and chunk layouts were cross-checked against [OpenSAGE map sources](https://github.com/OpenSAGE/OpenSAGE/tree/master/src/OpenSage.Game/Data/Map), particularly [GlobalLighting](https://github.com/OpenSAGE/OpenSAGE/blob/master/src/OpenSage.Game/Data/Map/GlobalLighting.cs), [GlobalLightingConfiguration](https://github.com/OpenSAGE/OpenSAGE/blob/master/src/OpenSage.Game/Data/Map/GlobalLightingConfiguration.cs), [BlendTileData](https://github.com/OpenSAGE/OpenSAGE/blob/master/src/OpenSage.Game/Data/Map/BlendTileData.cs) and [EnvironmentData](https://github.com/OpenSAGE/OpenSAGE/blob/master/src/OpenSage.Game/Data/Map/EnvironmentData.cs). Local schema caches are research material; generated maps are not copied from those sources. Existing licensing attribution remains in `native/THIRD_PARTY.md`.
+Container and chunk layouts were cross-checked against [OpenSAGE map sources](https://github.com/OpenSAGE/OpenSAGE/tree/master/src/OpenSage.Game/Data/Map), particularly [GlobalLighting](https://github.com/OpenSAGE/OpenSAGE/blob/master/src/OpenSage.Game/Data/Map/GlobalLighting.cs), [GlobalLightingConfiguration](https://github.com/OpenSAGE/OpenSAGE/blob/master/src/OpenSage.Game/Data/Map/GlobalLightingConfiguration.cs), [BlendTileData](https://github.com/OpenSAGE/OpenSAGE/blob/master/src/OpenSage.Game/Data/Map/BlendTileData.cs) and [EnvironmentData](https://github.com/OpenSAGE/OpenSAGE/blob/master/src/OpenSage.Game/Data/Map/EnvironmentData.cs). Local schema caches are research material; generated maps are not copied from those sources. Existing licensing attribution remains in `src/native/THIRD_PARTY.md`.
 
 ## Material and scenery pass observations
 

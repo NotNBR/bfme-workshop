@@ -8,7 +8,7 @@ The file is a collection of versioned binary sections, not a single terrain imag
 It contains placements and references to the game's existing assets. The familiar
 BFME2 models, animations, movement and combat still come from the original engine
 and object definitions. Our prepared armies and reinforcement orders are currently
-created by `native/host/battle.inc`, not embedded in Grey Mountains.
+created by `src/native/host/battle.inc`, not embedded in Grey Mountains.
 
 ## Measured contents
 
@@ -233,7 +233,7 @@ flowchart TD
 
 For three times Grey Mountains' total area at roughly the same proportions, the
 proposed playable size is **840 x 953 tiles**, about 8,400 x 9,530 world units.
-The subsequent [Ithilien Frontier build](../maps/ithilien-frontier/README.md)
+The subsequent [Ithilien Frontier build](../projects/maps/ithilien-frontier/README.md)
 uses this playable size with Ithilien's 30-tile border: 900 x 1,013 stored samples.
 It passes short native BFME2 load/render checks. WorldBuilder UI acceptance,
 long-match performance and general engine size limits remain unverified.
@@ -271,4 +271,4 @@ Format references: [OpenSAGE map definitions](https://github.com/OpenSAGE/OpenSA
 [script definitions](https://github.com/OpenSAGE/OpenSAGE/tree/master/src/OpenSage.Game/Scripting), and
 [row-padded bit-array reader](https://github.com/OpenSAGE/OpenSAGE/blob/master/src/OpenSage.FileFormats/BinaryReaderExtensions.cs).
 These are cross-checks against real local files, not claims that every field is fully
-understood. Attribution is retained in `native/THIRD_PARTY.md`.
+understood. Attribution is retained in `src/native/THIRD_PARTY.md`.

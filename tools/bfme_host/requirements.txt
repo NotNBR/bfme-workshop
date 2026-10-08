@@ -1,4 +1,0 @@
-capstone==5.0.7
-pefile==2024.8.26
-Pillow==12.3.0
-numpy==2.5.3

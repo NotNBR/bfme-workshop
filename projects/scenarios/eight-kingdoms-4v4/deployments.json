@@ -1,0 +1,49 @@
+{
+  "seed": 821652,
+  "teams": [
+    1,
+    1,
+    1,
+    1,
+    2,
+    2,
+    2,
+    2
+  ],
+  "fronts": [
+    {
+      "base": 7
+    },
+    {
+      "position": [
+        7970.0,
+        7920.0
+      ]
+    },
+    {
+      "position": [
+        3700.0,
+        4300.0
+      ]
+    },
+    {
+      "base": 3
+    }
+  ],
+  "front_names": [
+    "THE NORTHWESTERN SIEGE",
+    "THE EASTERN HIGHLAND ROAD",
+    "THE WESTERN RIVER APPROACH",
+    "THE SOUTHEASTERN SIEGE"
+  ],
+  "axes": [
+    0.22,
+    0.2,
+    0.6,
+    -0.35
+  ],
+  "field_fronts": [
+    1,
+    2
+  ]
+}
