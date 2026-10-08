@@ -6,11 +6,11 @@ The new bfmeXbar native adapter code is distributed under **GPL-3.0-only**. See 
 
 Source: https://github.com/OpenSAGE/OpenSAGE
 
-`src/tools/native/w3d.py` adapts the adaptive-delta decoding algorithm described by `W3dAdaptiveDeltaCodec.cs` and `W3dAdaptiveDeltaBlock.cs`, with the motion-channel layouts from the associated parser files. Copyright remains with the OpenSAGE contributors. The source was retrieved on 7 October 2026.
+`src/legacy/recoil/tools/w3d.py` adapts the adaptive-delta decoding algorithm described by `W3dAdaptiveDeltaCodec.cs` and `W3dAdaptiveDeltaBlock.cs`, with the motion-channel layouts from the associated parser files. Copyright remains with the OpenSAGE contributors. The source was retrieved on 7 October 2026.
 
 OpenSAGE's complete license notice is preserved in [OPENSAGE-LICENSE.md](OPENSAGE-LICENSE.md), including its reference to EA-derived components. [OPENSAGE-LICENSE-EA.md](OPENSAGE-LICENSE-EA.md) is also preserved. The adapter does not embed EA game binaries or claim ownership of original art.
 
-`src/tools/worldbuilder/` uses native map layouts cross-checked on 8 October 2026 with OpenSAGE's `HeightMapData`, `BlendTileData`, `BlendTileTexture`, `MapObject`, `AssetPropertyCollection`, `AssetProperty`, and row-padded bit-array reader. It preserves unedited native chunks. The authoring operations, transaction workflow, diagnostic preview and Computer Use session adapter are project code. Retail maps used for local verification remain ignored runtime inputs.
+`src/bfmexbar/formats/` and `src/bfmexbar/mapkit/` use native map layouts cross-checked on 8 October 2026 with OpenSAGE's `HeightMapData`, `BlendTileData`, `BlendTileTexture`, `MapObject`, `AssetPropertyCollection`, `AssetProperty`, and row-padded bit-array reader. It preserves unedited native chunks. The authoring operations, transaction workflow, diagnostic preview and Computer Use session adapter are project code. Retail maps used for local verification remain ignored runtime inputs.
 
 ## Recoil / Spring
 
@@ -24,10 +24,10 @@ The engine is downloaded as a separate ignored runtime. Its GPL source and licen
 
 ## openbfme2 and BFME II
 
-`D:\LAN\openbfme2` supplies read-only reconstruction and file-layout references. Its source notices remain in the original repository. The original-host build uses the complete local game at `D:\LAN\lotrbfme2\local\bfme2`, copied only into ignored runtime files. The older Recoil importer used `D:\LAN\bfme2`.
+[openbfme2 (Open-BFME-2)](https://github.com/Open-BFME/Open-BFME-2) supplies reconstruction, symbols and file-layout references under its GPLv3 license. Runtime launch helpers are imported from a separate user-supplied checkout; its license notices remain with that dependency. The original-host build requires a user-supplied BFME II installation and copies it only into ignored runtime files. No retail installation or extracted game assets are distributed here.
 
-`src/native/host/strategic.cpp` uses the recovered BFME2 1.06 camera/object layouts, symbols and Drawable::draw visibility semantics. Runtime helpers are imported from openbfme2 without modifying its checkout. The compiler is the existing MSVC 7.1 toolchain in its reference checkout; the compiler is not redistributed by this project. Direct3D9 interface slots were cross-checked against the locally installed mingw-w64 `d3d9.h` declarations; that header is not copied into the project.
+`projects/strategic/native/strategic.cpp` uses the recovered BFME2 1.06 camera/object layouts, symbols and Drawable::draw visibility semantics. Runtime helpers are imported from openbfme2 without modifying its checkout. The compiler is the existing MSVC 7.1 toolchain in its reference checkout; the compiler is not redistributed by this project. Direct3D9 interface slots were cross-checked against the locally installed mingw-w64 `d3d9.h` declarations; that header is not copied into the project.
 
 ## Python dependencies
 
-NumPy and Pillow are installed separately, using the versions in `src/tools/native/requirements.txt`; their package distributions include their respective license notices.
+Python dependencies are declared in `pyproject.toml`: Capstone, pefile, NumPy and Pillow, with imageio-ffmpeg for video. They are installed separately and retain the license notices included in their distributions. Legacy requirement files remain for compatibility.

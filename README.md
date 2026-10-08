@@ -70,3 +70,5 @@ unverified.
 - [Native map-file structure](docs/map-format.md)
 - [BFME2 integration and technical details](docs/bfme-host.md)
 - [License](LICENSE.txt) and [third-party notices](docs/licenses/README.md)
+
+This project is not endorsed by or affiliated with EA or its licensors.
