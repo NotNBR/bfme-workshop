@@ -8,6 +8,9 @@ Built with help from [openbfme2 (Open-BFME-2)](https://github.com/Open-BFME/Open
 whose launch helpers, compatibility code and reverse-engineering work underpin
 the native BFME2 integration.
 
+**[Eight Kingdoms showcase trailer](projects/showcases/eight-kingdoms/media/Eight-Kingdoms-Trailer.mp4)**
+— 1080p, 76 seconds, 19 MB. Open the link to view or download the MP4.
+
 ## What's inside
 
 - **[Strategic mod](projects/strategic/README.md)** — extended zoom, an overhead
@@ -54,7 +57,7 @@ use the project environment from the repository root:
 ```
 
 Then run **`scripts/launchers/Launch Eight Kingdoms.cmd`**.
-Game assets and generated videos are not included in this repository. Current
+Game assets must be supplied locally. Current
 validation covers local play; multiplayer compatibility and long matches remain
 unverified.
 

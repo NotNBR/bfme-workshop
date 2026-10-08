@@ -1,5 +1,10 @@
 # Eight Kingdoms showcase
 
+The [showcase trailer](media/Eight-Kingdoms-Trailer.mp4) is the revision-3
+1080p, 76-second export, compressed to 18,959,430 bytes (under 20 MB).
+This selected video is tracked in `media/`; generated captures and other exports
+remain in the ignored `artifacts/` directory.
+
 `project.toml` selects the scenario, native capture format and map portrait.
 `shots.json` defines camera start/end positions, spans, elevations and frame
 counts. Positions can anchor to a front from the generated battle plan.
