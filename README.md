@@ -45,6 +45,11 @@ Requires Windows, Python 3.11+, a local **BFME2 1.06** installation, and the
 openbfme2 launch helpers and compiler toolchain described in the
 [setup guide](docs/repository-layout.md#python-and-local-configuration).
 
+**Bring your own game installation.** Set `paths.game` in
+`scripts/config.local.toml` to your complete BFME II 1.06 game folder. Setup copies
+the required files into `runtime/bfme-host/game/`, leaving the original untouched.
+It does not download the game; the openbfme2 source checkout alone is not enough.
+
 1. Copy `scripts/config.example.toml` to `scripts/config.local.toml` and set your
    local paths.
 2. Run **`scripts/launchers/Setup bfmeXbar.cmd`** to prepare the runtime.
@@ -59,8 +64,7 @@ use the project environment from the repository root:
 ```
 
 Then run **`scripts/launchers/Launch Eight Kingdoms.cmd`**.
-Game assets must be supplied locally. Current
-validation covers local play; multiplayer compatibility and long matches remain
+Current validation covers local play; multiplayer compatibility and long matches remain
 unverified.
 
 ## Further reading
