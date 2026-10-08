@@ -1,7 +1,8 @@
 # Repository layout
 
-bfmeXbar keeps the strategic extension, map projects and showcases in one
-repository. Reusable Python code lives in `src/bfmexbar`. Project-specific
+BFME Workshop keeps the strategic extension, map projects and showcases in one
+repository. Existing launchers and the Python package retain the bfmeXbar name.
+Reusable Python code lives in `src/bfmexbar`. Project-specific
 geometry, armies, camera shots and editorial choices live beside their project.
 The game installation and adjacent openbfme2 checkout remain read-only inputs.
 

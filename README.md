@@ -1,14 +1,14 @@
-# bfmeXbar
+# BFME Workshop
 
-A mod and creative toolkit for **The Battle for Middle-earth II**. It adds a
-Supreme Commander-style strategic view to the original game, alongside tools for
-building maps, staging large battles and recording trailers.
+NotNBR's collection of **Battle for Middle-earth** mods, tools, maps, experiments
+and showcases. Current projects focus on BFME II, including a strategic camera
+mod, native map creation and battle trailers.
 
 Built with help from [openbfme2 (Open-BFME-2)](https://github.com/Open-BFME/Open-BFME-2),
 whose launch helpers, compatibility code and reverse-engineering work underpin
 the native BFME2 integration.
 
-https://github.com/user-attachments/assets/a994ccfd-c922-4103-a289-8723cdf06c83
+https://github.com/user-attachments/assets/58612ed8-e734-4269-9eae-cec99b559f87
 
 Eight Kingdoms trailer · 76 seconds · 5.77 MB preview ·
 [1080p MP4 (19 MB)](projects/showcases/eight-kingdoms/media/Eight-Kingdoms-Trailer.mp4)
