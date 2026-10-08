@@ -6,6 +6,18 @@ from bfmexbar.mapkit.navigation_lab import build
 
 
 class NavigationLabTests(unittest.TestCase):
+    def test_bridge_controls_differ_only_in_presence_and_height(self):
+        from bfmexbar.mapkit.script_catalog import load_catalog
+        m,proof=build(load_catalog(),surface='bridges',movement=True,human_owned=True)
+        bridges=[o for o in m.objects() if o['template']=='GondorIthilienBridge2']
+        self.assertEqual([o['z'] for o in bridges],[79,179])
+        heights=m.heightmap()['elevations']*.0390625
+        self.assertEqual([heights[8+row*64+32,8+125] for row in range(4)],[100,20,20,20])
+        self.assertEqual([heights[8+row*64+32,8+90] for row in range(4)],[100]*4)
+        self.assertEqual(sum('crossing_volume' in c for c in proof['movement_cases']),4)
+        self.assertIn('LAB_Reachable_dry_GondorFighter',proof['expected'])
+        self.assertIn('LAB_Blocked_water_gap_GondorFighter',proof['expected'])
+
     def test_surface_variants_store_measured_heights(self):
         from bfmexbar.mapkit.script_catalog import load_catalog
         from bfmexbar.mapkit.analyze import records

@@ -4,7 +4,7 @@ These checks require the licensed BFME2 installation, prepared isolated runtime
 and compiled extension. They start the game; they are not part of unit discovery.
 
 For configurable views and per-image camera/hash evidence, use the
-[native screenshot command](../../docs/native-screenshots.md).
+[native screenshot command](../../docs/mapping/compatibility/screenshots.md).
 
 ```powershell
 python scripts/bfx.py mod build
@@ -28,5 +28,5 @@ report is `runtime/bfme-host/verification/cursor-zoom-regression.json`.
 
 The original script lab validates counters, flags, timing, branches and an area
 trigger by observing named objects created by native map scripts. Its harness
-does not create those objects. See [map scripts](../../docs/map-scripts.md) for
+does not create those objects. See [map scripts](../../docs/mapping/scripts/README.md) for
 build/run commands, failed experiments and precise evidence limits.

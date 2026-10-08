@@ -1,7 +1,7 @@
 # Worked design example: The White Mountain Marches
 
 This is an original concept exercise demonstrating the
-[rough-to-polished workflow](map-creation-workflow.md). It does not load an existing
+[rough-to-polished workflow](workflow.md). It does not load an existing
 landscape, specify copied terrain, or represent a completed native map. The title
 and location are a fictional LOTR-inspired setting, not a claim of a canonical site.
 

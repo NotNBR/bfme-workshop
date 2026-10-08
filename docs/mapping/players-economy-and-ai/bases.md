@@ -55,7 +55,7 @@ native tests. The writer is not yet a full original `.bse` project generator.
 The matched side reader supports at most 20 sides. It reads an embedded build
 entry's XYZ but forces its runtime Z to zero; the standalone faction-list reader
 retains Z. Do not treat the two contexts as interchangeable. Build-list fields
-and units are listed in [the mapping reference](mapping-reference.md).
+and units are listed in [the mapping reference](../file-structure/reference.md).
 
 Library loading reads teams, player scripts and per-side library names from a
 map document. The matched linker recursively visits referenced libraries,

@@ -6,13 +6,13 @@ should read as a coherent landscape at that stage's level of detail.
 
 This is the authoring workflow for future original bfmeXbar maps. It is a design
 and production method, not a claim that a new map has already been built. The
-[worked example](map-workflow-example.md) applies it to a fresh LOTR-inspired theme.
+[worked example](workflow-example.md) applies it to a fresh LOTR-inspired theme.
 
-The first actual from-scratch implementation is now [The Ashen March](ashen-march.md).
-Its [technical log](ashen-march-format-findings.md) records the new-document constructor,
+The first actual from-scratch implementation is now [The Ashen March](../ashen-march.md).
+Its [technical log](file-structure/ashen-march-findings.md) records the new-document constructor,
 native validation and remaining editor/playtest limitations. Use that measured path
 where the capability table below still describes the earlier toolset.
-The [mapping reference](mapping-reference.md) is the current index of binary
+The [mapping reference](file-structure/reference.md) is the current index of binary
 layouts, authoring rules and unresolved behavior. Editor operation is optional;
 the required evidence is structural validity and the relevant native behavior.
 
@@ -162,7 +162,7 @@ relax oversteep slopes, then regrade routes and bases. Use a fixed seed and insp
 before/after height sections; noise amplitude must not erase the composition.
 The original operators in `tools.worldbuilder.earth` implement this sequence's
 building blocks. They do not simulate rivers or hydraulic sediment transport.
-See the [algorithm research and measured example](ashen-march-format-findings.md#open-algorithm-research).
+See the [algorithm research and measured example](file-structure/ashen-march-findings.md#open-algorithm-research).
 
 Place drainage through the low ground, then set water levels, banks and crossings.
 Review the entire stream profile. Changes in water height require a deliberately
@@ -376,9 +376,9 @@ evidence separately; do not relabel a checkpoint note as a verified editor save.
 The source-specific `ithilien` and `relief` generators are useful lessons and code
 references, but are not this workflow's starting document or original terrain.
 
-Implementation details: [authoring commands](../src/tools/worldbuilder/README.md),
-[native file structure](map-format.md), and
-[existing map's measured limits](../projects/maps/ithilien-frontier/README.md).
+Implementation details: [authoring commands](../../src/tools/worldbuilder/README.md),
+[native file structure](file-structure/format.md), and
+[existing map's measured limits](../../projects/maps/ithilien-frontier/README.md).
 
 For the editor implementation and remaining terrain work, see
-[WorldBuilder source and terrain records](worldbuilder-terrain.md).
+[WorldBuilder source and terrain records](terrain-and-presentation/terrain.md).

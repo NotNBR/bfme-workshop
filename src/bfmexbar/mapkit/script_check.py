@@ -143,9 +143,18 @@ def validate(output, proof_path, source=None):
         # A unit can complete its move then receive another order from game AI.
         # Reachability is demonstrated by crossing, not remaining there forever.
         passed = bool(crossings) if reachable else maximum < case['near_bank_x']
+        volume = case.get('crossing_volume')
+        inside = [o['position'] for s in samples for o in s['objects'].get(case['unit'], [])
+                  if case['near_bank_x'] < o['position'][0] < case['far_bank_x']]
+        volume_ok = None
+        if volume is not None and reachable:
+            volume_ok = bool(inside) and all(volume['y_min'] <= p[1] <= volume['y_max'] and
+                                             p[2] >= volume['z_min'] for p in inside)
+            passed = passed and volume_ok
         movement.append(dict(unit=case['unit'], query_reachable=reachable,
                              final_x=objects[0]['position'][0], max_x=maximum,
-                             first_crossing_frame=crossings[0] if crossings else None, agrees=passed))
+                             first_crossing_frame=crossings[0] if crossings else None,
+                             crossing_samples=inside, crossing_volume_ok=volume_ok, agrees=passed))
         if not passed: errors.append(f"Movement disagrees with path query: {case['unit']}")
     first = evidence.get('first_seen', {})
     timing = []

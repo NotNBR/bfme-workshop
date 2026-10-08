@@ -29,6 +29,24 @@ checkout in editable mode when using the older `tools.*` module imports.
 
 ## Ownership
 
+Mapping documentation lives in `docs/mapping/`, grouped into six areas:
+
+```text
+docs/mapping/
+  README.md                  Overview, coverage and remaining work
+  workflow.md                Shared authoring workflow
+  file-structure/            Binary format and versioned reference
+  terrain-and-presentation/  Heights, materials, water, lighting and cameras
+  navigation/                Terrain flags, roads, bridges and placement
+  scripts/                   Script format, catalogue and authoring
+  players-economy-and-ai/    Starts, teams, bases and libraries
+  compatibility/             Evidence boundaries and screenshot tooling
+```
+
+Each area has a README entry point. Reusable implementation stays under
+`src/bfmexbar/formats/` and `src/bfmexbar/mapkit/`; grouping the references does
+not change Python imports or project launch commands.
+
 | Directory | What belongs here |
 | --- | --- |
 | `projects/strategic/` | Native camera, picking and symbols; default multipliers; supported executable fingerprint |

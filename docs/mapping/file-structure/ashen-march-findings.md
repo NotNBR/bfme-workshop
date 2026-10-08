@@ -41,7 +41,7 @@ those counts. Index zero means no blend; the payload contains blend_count−1
 records. Each is 18 bytes: secondary tile uint32, four direction bytes, flags
 byte, long-diagonal byte, int32 custom edge class and uint32 0x7ADA0000 marker.
 The constructor uses -1 for no custom edge. Flags expose inversion and forced
-triangle flip. See the later [terrain investigation](worldbuilder-terrain.md)
+triangle flip. See the later [terrain investigation](../terrain-and-presentation/terrain.md)
 for the full table/cliff layout and evidence. This map's constructor generates
 no cliff UV records; steep terrain uses ordinary textured geometry.
 

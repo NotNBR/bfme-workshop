@@ -1,7 +1,7 @@
 """Extract BFME2 script signatures from a user-supplied Open-BFME-2 checkout.
 
 No C++ is executed. Results are structural source evidence, not proof that an
-action is usable in every game mode. See docs/map-scripts.md for provenance.
+action is usable in every game mode. See docs/mapping/scripts/README.md for provenance.
 """
 
 import argparse

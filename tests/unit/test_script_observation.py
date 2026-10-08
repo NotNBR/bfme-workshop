@@ -23,6 +23,18 @@ class ScriptObservationTests(unittest.TestCase):
             report=dict(outcome='pass',profile_touched=False,run={'script_lab':evidence})
             path=out/'skirmish_retail.json';path.write_text(json.dumps(report))
             self.assertEqual(validate(out,proof_path),0)
+            # Crossing X alone does not prove travel on a bridge deck.
+            proof['movement_cases'][0]['crossing_volume']=dict(y_min=50,y_max=150,z_min=80)
+            proof_path.write_text(json.dumps(proof))
+            evidence['samples'].insert(1,sample(50,1250))
+            path.write_text(json.dumps(report))
+            self.assertEqual(validate(out,proof_path),0)
+            evidence['samples'][1]['objects']['LAB_Unit'][0]['position'][2]=20
+            path.write_text(json.dumps(report))
+            self.assertEqual(validate(out,proof_path),1)
+            evidence['samples'].pop(1)
+            del proof['movement_cases'][0]['crossing_volume']
+            proof_path.write_text(json.dumps(proof))
             evidence['samples'][1]['objects']['LAB_Unit'][0]['position'][0]=1100
             path.write_text(json.dumps(report))
             self.assertEqual(validate(out,proof_path),1)

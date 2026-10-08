@@ -1,7 +1,7 @@
 """Deterministic landscape operators: gradient fBm, domain warp and talus erosion.
 
 Original NumPy implementation of public algorithmic ideas; see the research
-notes in docs/ashen-march-format-findings.md. This is not a hydraulic solver.
+notes in docs/mapping/file-structure/ashen-march-findings.md. This is not a hydraulic solver.
 """
 
 from bfmexbar.paths import ROOT

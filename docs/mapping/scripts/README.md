@@ -2,7 +2,7 @@
 
 The decoder reads stored structure and arguments; it does not execute scripts,
 rewrite them, or declare every opcode understood. This is one workstream of the
-[mapping target](mapping-reference.md#project-target).
+[mapping guide](../README.md).
 
 ## Verified corpus
 
@@ -30,7 +30,7 @@ The legacy file adds eight Script v2 records, eleven Condition v4 records and
 10,254 actions and 26,550 arguments. All stored layouts are consumed exactly;
 legacy execution behavior has not been retested in the lab.
 
-The expanded [base/library audit](map-bases.md) additionally decodes 152 base
+The expanded [base/library audit](../players-economy-and-ai/bases.md) additionally decodes 152 base
 documents and 51 script libraries. It covers Script v3, Group v2, Condition v5,
 FalseAction v2 and outer PlayerScriptsList v6 that were absent from `Maps.big`.
 It also exposes legacy opcode/name and argument-migration cases.

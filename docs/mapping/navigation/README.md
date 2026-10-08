@@ -1,9 +1,13 @@
-# Terrain navigation experiments
+# Navigation
 
 The workshop tests navigation with original small maps and native script
 commands. These tests separate a path query from actual movement. They do not
 yet establish formation clearance, build placement, slope limits, manual player
 orders, bridge destruction, or every locomotor's behavior.
+
+The [roads and bridges experiment](roads-and-bridges.md) extends these
+corridors with original road endpoint pairs and walkable object bridges,
+including a raised-bridge negative control and deck-height trajectory checks.
 
 ## Flat corridors
 
@@ -51,7 +55,7 @@ does not prove an absolute engine prohibition in every situation.
 
 ## Reproduce
 
-The commands use the bundled, native-reconciled [script catalogue](map-scripts.md).
+The commands use the bundled, native-reconciled [script catalogue](../scripts/README.md).
 An explicit `--catalog` can override it:
 
 ```powershell

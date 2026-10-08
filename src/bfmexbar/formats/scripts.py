@@ -1,6 +1,6 @@
 """Read BFME2 map scripts without applying another game's opcode enum.
 
-Source provenance and semantic limits: docs/map-scripts.md. This is a read-only
+Source provenance and semantic limits: docs/mapping/scripts/README.md. This is a read-only
 decoder; it does not rewrite scripts or apply runtime compatibility migrations.
 """
 

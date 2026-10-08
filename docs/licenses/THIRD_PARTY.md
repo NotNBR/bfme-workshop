@@ -17,14 +17,14 @@ OpenSAGE's complete license notice is preserved in [OPENSAGE-LICENSE.md](OPENSAG
 The section coverage expansion also consults OpenSAGE's `BuildListInfo`,
 `BuildLists`, `SidesList`, camera animation/frame, water/wave, environment,
 post-effect, skybox and global-lighting schemas. The additional layouts and
-unresolved meanings are recorded in the [mapping reference](../mapping-reference.md).
+unresolved meanings are recorded in the [mapping reference](../mapping/file-structure/reference.md).
 No retail payloads are included in the synthetic tests.
 
 The script decoder additionally consults OpenSAGE's `Scripting/Script`,
 `ScriptGroup`, `ScriptContent`, `ScriptArgument` and related chunk schemas,
 and Open-BFME-2's parameter/condition/script writers. The independently written
 decoder preserves numeric IDs instead of copying another game's opcode enum.
-See [map scripts](../map-scripts.md) for the source revision and evidence limits.
+See [map scripts](../mapping/scripts/README.md) for the source revision and evidence limits.
 
 The bundled `src/bfmexbar/mapkit/data/bfme2-1.06-scripts.json` records compatibility
 metadata extracted from Open-BFME-2's action/condition initializers at revision
@@ -32,7 +32,7 @@ metadata extracted from Open-BFME-2's action/condition initializers at revision
 memory. It retains source file hashes and provenance. It does not redistribute
 retail scripts or executable bytes. Lighting and castle serializers independently
 implement layouts cross-checked against matched routines from the same source;
-see [lighting](../map-lighting.md) and [bases](../map-bases.md).
+see [lighting](../mapping/terrain-and-presentation/lighting.md) and [bases](../mapping/players-economy-and-ai/bases.md).
 
 The independently written terrain decoder and audit tools were cross-checked on
 8 October 2026 against EA's [Generals/Zero Hour WorldBuilder source](https://github.com/electronicarts/CnC_Generals_Zero_Hour),
@@ -40,7 +40,12 @@ particularly `WHeightMapEdit.cpp`, `WorldHeightMap.cpp`, and `TileData.h`, as we
 as OpenSAGE's `BlendDescription` and `CliffTextureMapping`. EA's source is
 copyright Electronic Arts Inc. and distributed under GPL-3.0-or-later; no upstream
 implementation is vendored by this change. The field descriptions, local evidence
-and interpretation limits are recorded in [WorldBuilder terrain](../worldbuilder-terrain.md).
+and interpretation limits are recorded in [WorldBuilder terrain](../mapping/terrain-and-presentation/terrain.md).
+
+The independently written road-pair inspector and writer use flag names from
+EA's `Common/MapObject.h`, compared with OpenSAGE's `RoadType.cs` and OpenBFME2's
+road-buffer source. Corpus and native evidence, and the limits of those source
+comparisons, are recorded in [roads and bridges](../mapping/navigation/roads-and-bridges.md).
 
 ## Recoil / Spring
 

@@ -16,7 +16,7 @@ from bfmexbar.mapkit.analyze import RECORD_VERSIONS, blend_details, nested, reco
 def section(m, c):
     name=m.names[c.name_id]
     result=dict(name=name,version=c.version,bytes=len(c.data),layout='opaque',
-                semantics='See docs/mapping-reference.md; parsing alone is not semantic verification')
+                semantics='See docs/mapping/file-structure/reference.md; parsing alone is not semantic verification')
     try:
         if name in RECORD_VERSIONS:
             value=records(m,name)

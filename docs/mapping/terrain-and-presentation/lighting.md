@@ -54,7 +54,7 @@ The upstream ledger marks reader RVA `0x000ACAF7` (1,563 bytes) and writer
 not a fresh compiler byte-match run in this repository. Neutral source labels
 are preserved rather than assigning meanings from another SAGE game.
 
-For native readback, add `--lighting-probe` to the [script lab](map-scripts.md).
+For native readback, add `--lighting-probe` to the [script lab](../scripts/README.md).
 It gives every time/light slot distinct original values and records the engine's
 arrays, overbright toggle, flag, vectors, shadow color and final values. The
 observer only reads memory and compares it with the authored map. A successful

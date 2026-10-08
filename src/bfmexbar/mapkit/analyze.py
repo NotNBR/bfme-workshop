@@ -260,6 +260,8 @@ def analyze(data, source=''):
     report['waypoints'] = [dict(position=[o['x'], o['y'], o['z']], properties={k: v for k, _, v in o['properties']})
                            for o in objects if o['template'] == '*Waypoints/Waypoint']
     report['object_flags'] = dict(Counter(str(o['flags']) for o in objects))
+    from bfmexbar.mapkit.roads import inspect as inspect_roads
+    report['roads'] = inspect_roads(objects)
     report['object_layers'] = dict(Counter(v for o in objects for k, _, v in o['properties'] if k == 'objectLayer'))
     report['object_example'] = {k: v for k, v in objects[0].items() if k != 'chunk'} if objects else None
     report['not_semantically_decoded'] = ['Script opcode meanings, argument constraints and execution behavior', 'Build-list runtime behavior and whiner flag',

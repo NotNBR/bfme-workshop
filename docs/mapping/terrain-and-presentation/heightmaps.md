@@ -6,11 +6,11 @@ CLI for arbitrary grayscale or 16-bit heightmap inputs.
 
 ## Source and implementation
 
-- [Reference height image](../projects/maps/eight-kingdoms/references/reference-height.jpg): relative elevation and coastline.
-- [Terrain conversion](../projects/maps/eight-kingdoms/terrain.py): image cleanup, elevation generation and playable terrain shaping.
-- [Build orchestration](../projects/maps/eight-kingdoms/build.py): reference crop, water level, native document and previews.
-- [Map settings](../projects/maps/eight-kingdoms/map.toml): dimensions, borders and deterministic seed.
-- [Native terrain writer](../src/bfmexbar/mapkit/blank.py): `set_heights` and material planes.
+- [Reference height image](../../../projects/maps/eight-kingdoms/references/reference-height.jpg): relative elevation and coastline.
+- [Terrain conversion](../../../projects/maps/eight-kingdoms/terrain.py): image cleanup, elevation generation and playable terrain shaping.
+- [Build orchestration](../../../projects/maps/eight-kingdoms/build.py): reference crop, water level, native document and previews.
+- [Map settings](../../../projects/maps/eight-kingdoms/map.toml): dimensions, borders and deterministic seed.
+- [Native terrain writer](../../../src/bfmexbar/mapkit/blank.py): `set_heights` and material planes.
 
 The colored reference guides scenery composition. It is not used as a texture
 stretched over the terrain. Native terrain materials and placed assets are
@@ -89,12 +89,12 @@ workflow. A reusable importer would need explicit crop/orientation, elevation
 range, water level and source bit-depth handling.
 
 Grid audits do not establish that every crossing works for native hordes. See
-the [map's verification scope](../projects/maps/eight-kingdoms/README.md#verification-scope)
+the [map's verification scope](../../../projects/maps/eight-kingdoms/README.md#verification-scope)
 for the native checks completed so far.
 
 ## How this relates to a `.map` file
 
 The heightmap supplies only terrain elevations. A complete map also needs
 materials and traversal planes, asset placements, player starts, water and other
-versioned sections. See [BFME2 map-file structure](map-format.md) for the binary
+versioned sections. See [BFME2 map-file structure](../file-structure/format.md) for the binary
 container, chunk headers, `HeightMapData`, `BlendTileData`, objects and properties.

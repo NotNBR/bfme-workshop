@@ -1,12 +1,13 @@
 """Original flat corridors for read-only native pathability observations.
 
 Measures UNIT_CAN_PATH_TO_WAYPOINT and optional scripted traversal across
-terrain flags, standing-water depths and height-only ridges. Formation clearance,
-manual orders, build placement and bridges remain separate experiments.
+terrain flags, standing-water depths, height-only ridges and walkable bridges.
+Formation clearance, manual orders and build placement remain separate experiments.
 """
 
 import argparse
 import json
+import math
 from pathlib import Path
 
 import numpy as np
@@ -24,12 +25,12 @@ CASES = ('open', 'impassable', 'players', 'extra_override')
 
 
 def build(catalog, *, movement=False, human_owned=False, surface='flags', water_depths=(0,1,20), slope_rises=(5,10,20)):
-    if surface not in ('flags','water','slopes'): raise ValueError('Unknown navigation surface experiment')
+    if surface not in ('flags','roads','water','slopes','bridges'): raise ValueError('Unknown navigation surface experiment')
     if len(water_depths)!=3 or len(set(water_depths))!=3 or any(not isinstance(d,int) or d<0 or d>1000 for d in water_depths):
         raise ValueError('Use three distinct integer water depths in the lab range 0..1000')
     if len(slope_rises)!=3 or len(set(slope_rises))!=3 or any(not isinstance(d,int) or not 1<=d<=400 for d in slope_rises):
         raise ValueError('Use three distinct integer rises per sample in the lab range 1..400')
-    cases_names = (CASES if surface=='flags' else ('flat',)+tuple(f'rise_{d}' for d in slope_rises) if surface=='slopes'
+    cases_names = (('dry','water_gap','bridge','raised_bridge') if surface=='bridges' else CASES if surface in ('flags','roads') else ('flat',)+tuple(f'rise_{d}' for d in slope_rises) if surface=='slopes'
                    else ('dry',)+tuple('water_at_ground' if d==0 else f'water_{d}' for d in water_depths))
     border, size = 8, 256
     m = create(size, size, border, title='BFME Workshop Navigation Lab')
@@ -46,7 +47,7 @@ def build(catalog, *, movement=False, human_owned=False, surface='flags', water_
     for case in range(1,4):
         region = np.s_[border+64*case:border+64*(case+1),border+120:border+130]
         labels[region] = 1
-        if surface=='flags':
+        if surface in ('flags','roads'):
             if case in (1,3): blocked[region] = 1
             if case == 2: players[region] = 1
             if case == 3: extra[region] = 1
@@ -73,6 +74,23 @@ def build(catalog, *, movement=False, human_owned=False, surface='flags', water_
                 points=[(1200,row*640),(1300,row*640),(1300,(row+1)*640),(1200,(row+1)*640)],
                 water_height=100+depth,shader='Wtr_Gondor.W3D',depth_colors=''))
         m.chunk('StandingWaterAreas').data=standing_water(areas)
+    if surface=='bridges':
+        from bfmexbar.formats.water import standing_water
+        heights=np.full(shape,100.)
+        areas=[]
+        for row in range(1,4):
+            heights[border+row*64:border+(row+1)*64,border+109:border+142]=20
+            areas.append(dict(id=row,name=cases_names[row],layer='Water',uv_speed=.06,additive=0,
+                bump_texture='WaterRippleBump.tga',sky_texture='SkyEnv.tga',
+                points=[(1090,row*640),(1410,row*640),(1410,(row+1)*640),(1090,(row+1)*640)],
+                water_height=80,shader='Wtr_Gondor.W3D',depth_colors=''))
+        set_heights(m,heights)
+        m.chunk('StandingWaterAreas').data=standing_water(areas)
+        for row,offset in ((2,79),(3,179)):
+            # This is a walk-on-wall object, not a paired bridge endpoint record.
+            # Its native long axis is local Y. Map Z is relative to terrain.
+            add_object(m,'GondorIthilienBridge2',1250,row*640+320,angle=-math.pi/2,z=offset,
+                       extra=[('objectName',3,'LAB_Bridge_'+cases_names[row])])
     add_object(m,'GondorFighter',100,100,extra=[('objectName',3,'LAB_Control')])
     w = Writer(m,catalog)
     scripts, alternatives, cases = [], [], []
@@ -81,11 +99,15 @@ def build(catalog, *, movement=False, human_owned=False, surface='flags', water_
         for row, template in enumerate(UNITS):
             label = f'{case}_{template}'
             y = (corridor*64+16+row*12)*10
+            if surface=='bridges': y=corridor*640+290+row*20
+            if surface=='roads':
+                from bfmexbar.mapkit.roads import add_segment
+                add_segment(m,'DaleRoad01',(300,y,0),(1900,y,0),name='Road_'+label)
             unit, waypoint = 'LAB_Unit_'+label, 'Target_'+label
             owner = 'Player_1' if human_owned else 'PlyrCivilian'
-            add_object(m,template,1050 if movement else 400,y,extra=[('objectName',3,unit),
+            add_object(m,template,850 if surface=='bridges' else 1050 if movement else 400,y,extra=[('objectName',3,unit),
                 ('originalOwner',3,owner+'/team'+owner)])
-            for suffix,x in (('Target',1550 if movement else 2100),('Result',200)):
+            for suffix,x in (('Target',1650 if surface=='bridges' else 1550 if movement else 2100),('Result',200)):
                 name = suffix+'_'+label
                 add_object(m,'*Waypoints/Waypoint',x,y,extra=[('waypointName',3,name),
                     ('waypointID',1,100+corridor*8+row*2+(suffix=='Result')),
@@ -119,7 +141,22 @@ def build(catalog, *, movement=False, human_owned=False, surface='flags', water_
                scope='Path-query truth values and optional scripted traversal; not placement or formation clearance')
     if movement:
         proof.update(duration_seconds=40, minimum_frame=150,
-                     movement_cases=[dict(**case,near_bank_x=1200,far_bank_x=1300) for case in cases])
+                     movement_cases=[dict(**case,near_bank_x=1090 if surface=='bridges' else 1200,
+                                          far_bank_x=1410 if surface=='bridges' else 1300) for case in cases])
+    if surface=='bridges':
+        proof['expected'] += ['LAB_Bridge_bridge','LAB_Bridge_raised_bridge']
+        # Regression expectations established by native run 009. Reading both
+        # query branches remains useful, but a broken dry control must fail.
+        proof['expected'] += [('LAB_Reachable_' if case in ('dry','bridge') else 'LAB_Blocked_')+case+'_'+unit
+                              for case in cases_names for unit in UNITS]
+        for case in proof.get('movement_cases',[]):
+            if case['case']=='bridge':
+                case['crossing_volume']=dict(y_min=1524,y_max=1676,z_min=100)
+    if surface=='roads':
+        # Paired roads should not silently turn explicit barriers into bridges.
+        # These expected controls also make a broken dry route fail the test.
+        proof['expected'] += [('LAB_Reachable_' if case in ('open','players') else 'LAB_Blocked_')+case+'_'+unit
+                              for case in cases_names for unit in UNITS]
     return m,proof
 
 
@@ -130,7 +167,7 @@ def main():
     p.add_argument('--install',action='store_true')
     p.add_argument('--movement',action='store_true',help='Issue move orders and compare actual barrier crossing with path queries')
     p.add_argument('--human-owned',action='store_true',help='Assign units to Player_1 and verify that ownership with native scripts')
-    p.add_argument('--surface',choices=('flags','water','slopes'),default='flags')
+    p.add_argument('--surface',choices=('flags','roads','water','slopes','bridges'),default='flags')
     p.add_argument('--water-depths',nargs=3,type=int,default=(0,1,20),metavar=('A','B','C'))
     p.add_argument('--slope-rises',nargs=3,type=int,default=(5,10,20),metavar=('A','B','C'))
     args=p.parse_args()

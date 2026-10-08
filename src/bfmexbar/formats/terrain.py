@@ -2,7 +2,7 @@
 
 Retain raw values alongside source-based names; legacy semantics may differ.
 
-See docs/worldbuilder-terrain.md for provenance and the limits of interpretation.
+See docs/mapping/terrain-and-presentation/terrain.md for provenance and the limits of interpretation.
 This module does not change or regenerate terrain data.
 """
 

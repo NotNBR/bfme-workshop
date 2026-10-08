@@ -85,9 +85,9 @@ export validation passes.
 The two reference images were supplied by NotNBR and confirmed as AI-generated
 on 8 October 2026. See the [media provenance notes](../../../docs/licenses/README.md#media-provenance).
 
-See the [heightmap workflow](../../../docs/heightmap-workflow.md) for source-image
+See the [heightmap workflow](../../../docs/mapping/terrain-and-presentation/heightmaps.md) for source-image
 processing, grid orientation, native elevation precision and rebuild outputs,
-and the [map-file structure](../../../docs/map-format.md) for binary sections.
+and the [map-file structure](../../../docs/mapping/file-structure/format.md) for binary sections.
 
 The source document begins as an empty native plane; no stock `.map` landscape
 is loaded. `reference-height.jpg` supplies relative elevation and coastline

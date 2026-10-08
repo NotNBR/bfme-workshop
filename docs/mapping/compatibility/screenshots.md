@@ -62,4 +62,4 @@ default/experimental UV mappings. The generator, panel coordinates and source
 hash are retained; it never rewrites Eight Kingdoms. The cliff scales are test
 candidates, not recommended production values. Installation also generates radar
 and loading TGAs and registers the test map in the isolated map cache.
-See [terrain research](worldbuilder-terrain.md).
+See [terrain research](../terrain-and-presentation/terrain.md).

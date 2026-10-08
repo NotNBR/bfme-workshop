@@ -1,55 +1,8 @@
-# Mapping reference and coverage
+# Versioned map reference and coverage
 
-This is the index of what the workshop knows about **BFME II 1.06 maps**:
-their binary structure, authoring constraints and dependencies on game data.
-It is not yet a complete semantic specification. Operating WorldBuilder is not
-required to investigate these rules; source analysis, retail-file comparisons
-and controlled engine tests provide different kinds of evidence.
-
-Start with [map-file structure](map-format.md) for the container and terrain
-planes, [terrain records](worldbuilder-terrain.md) for blends and cliffs, and
-[heightmap authoring](heightmap-workflow.md) for image import. The
-[creation workflow](map-creation-workflow.md) connects those to map builds.
-This page tracks coverage and documents the additional record layouts.
-
-## Project target
-
-Understand the BFME2 mapping system well enough to create original maps from
-scratch and use its supported capabilities deliberately. This includes the map
-file, referenced assets and definitions, runtime interpretation and packaging.
-Compatibility initially targets the unmodified **BFME2 1.06 engine**; features
-requiring the workshop extension must be identified separately. Other patches
-and expansion games need their own validation.
-
-“Arbitrary maps” means arbitrary authored designs within the engine's supported
-features and limits. It is not a promise of unlimited dimensions or arbitrary
-new mechanics. Discovering those limits is part of the work.
-
-For each capability, track five separate deliverables:
-
-1. **Read:** versioned layout, raw-value preservation and representative files.
-2. **Understand:** field meanings, units, legal values, references and interactions.
-3. **Write:** original authoring support, independent of donor-map geometry.
-4. **Validate:** a small native example with recorded inputs, expected and
-   observed behavior, structural checks and the exact map hash.
-5. **Document:** a usable example and explicit compatibility/limitation notes.
-
-| Workstream | Capabilities to cover | Completion evidence |
-| --- | --- | --- |
-| Document and packaging | Sections, properties, sidecars, assets, map-local configuration, discovery/cache | New document loads through normal game entry points; unknown data survives safe edits |
-| Terrain and presentation | Heights, materials, blends, cliffs, water, shores, lighting, weather/environment, cameras | Small feature maps and mixed-feature cases rendered by BFME2 |
-| Navigation and placement | Terrain flags, slopes, roads, bridges, layers, collision, buildability, footprints | Movement/building-placement cases for relevant unit types and formations |
-| Players and economy | Starts, ownership, diplomacy, resources, settlements, creeps, victory/defeat | Original skirmish scenarios work for the declared player configurations |
-| AI | Build lists, bases, attack priorities, routes, recruitment and scripted teams | AI demonstrates intended behavior over a sustained match |
-| Scripting and scenarios | Conditions/actions, timers, counters, references, reinforcements, objectives, cinematics and supported script/config hooks | Original minimal scenarios execute each claimed behavior, including failure/false branches |
-| Compatibility and limits | Stock-engine use, multiplayer, save/load, performance and patch differences | Repeatable integration tests; extension-dependent cases labelled separately |
-
-The first milestone is a reproducible capability inventory. The next is a library
-of small original feature maps, followed by a combined scenario to expose
-interactions that isolated tests miss. A blank skirmish load or screenshot alone
-does not close the AI, scripting, multiplayer or performance workstreams.
-The screenshot harness is evidence tooling; map compatibility must not silently
-depend on its camera/reveal/scenario helpers.
+Detailed layouts, corpus evidence and authoring constraints for BFME II 1.06.
+Start with the [six-area mapping guide](../README.md) for capabilities, tools and
+remaining work. This reference documents observed formats, not complete engine semantics.
 
 ## What the coverage means
 
@@ -95,7 +48,7 @@ legal; this is not a whitelist of everything the engine can read.
 The legacy combinations occur in `maps/shellmapbackup/shellmapbackup.map`.
 Four maps have nonempty camera-animation lists and all four now decode. There
 are **718 immediate script/group children in the modern maps**. The recursive
-[script audit](map-scripts.md), now including the legacy file, decodes 3,340 scripts,
+[script audit](../scripts/README.md), now including the legacy file, decodes 3,340 scripts,
 4,186 conditions and 10,254 actions. These counts do not establish complete opcode semantics.
 All faction and embedded build lists in this corpus contain zero build entries;
 passing them cannot establish real-world nonempty build-list compatibility.
@@ -117,7 +70,7 @@ containers round-trip exactly, and every observed top-level section/version has
 a decoder: **23 section names and 43 section/version pairs** overall.
 This is a local corpus result, not a completeness claim for every
 legal BFME2 file. Base files add `CastleTemplates v1–5`, real faction/side build
-lists and additional legacy variants. See [bases and libraries](map-bases.md).
+lists and additional legacy variants. See [bases and libraries](../players-economy-and-ai/bases.md).
 
 Reproduce from an installed workshop environment:
 
@@ -183,7 +136,7 @@ Each decoded collection must consume exactly its payload, with no trailing bytes
   appends a restriction count and that many side-name strings.
 - `LibraryMapLists v1`: nested `LibraryMaps v1`, each containing a count
   followed by map-name strings. `PlayerScriptsList v1` instead holds ScriptList
-  chunks; the [script reference](map-scripts.md) describes their nested records
+  chunks; the [script reference](../scripts/README.md) describes their nested records
   and stored operands. Runtime interpretation is a separate investigation.
 - `WaypointsList v1`: count, then `(i32 startID, i32 endID)` per link.
 
@@ -216,7 +169,7 @@ Each decoded collection must consume exactly its payload, with no trailing bytes
   direction XYZ. Total size: v7 1348, v8 1360 bytes. The native order is terrain
   sun, object sun/fill 1/fill 2, terrain fill 1/fill 2, then three lights in a
   third array whose role remains unresolved. Do not label it infantry without
-  further evidence. [Lighting details and tests](map-lighting.md).
+  further evidence. [Lighting details and tests](../terrain-and-presentation/lighting.md).
 - `SkyboxSettings v1`: `vec3 position, f32 scale, f32 rotation,
   str textureScheme`.
 
@@ -236,44 +189,19 @@ Each decoded collection must consume exactly its payload, with no trailing bytes
   are not yet established by this project.
 
 These layouts are implemented in
-[`analyze.py`](../src/bfmexbar/mapkit/analyze.py), cross-checked with
+[`analyze.py`](../../../src/bfmexbar/mapkit/analyze.py), cross-checked with
 [OpenSAGE map sources](https://github.com/OpenSAGE/OpenSAGE/tree/master/src/OpenSage.Game/Data/Map),
 [BuildListInfo](https://github.com/OpenSAGE/OpenSAGE/blob/master/src/OpenSage.Game/Logic/Map/BuildListInfo.cs)
 and [SidesList](https://github.com/OpenSAGE/OpenSAGE/blob/master/src/OpenSage.Game/Logic/Map/SidesList.cs).
 They are independent of whether an editor UI can be automated.
 
-## Remaining work, in priority order
-
-1. **Scripts:** the stored hierarchy and arguments now decode across all 67
-   retail maps. Establish BFME2 opcode meanings and argument constraints,
-   group activation, difficulty flags and timing. A typed writer, complete named
-   template catalogue and twelve-script native lab now exist; the wider opcode
-   behavior and scenario authoring work remains open. Spatial edits must account for
-   coordinate arguments and named references. Campaign payloads provide cases
-   that empty skirmish scripts cannot cover.
-2. **Terrain exceptions and behavior:** resolve the intended meaning of Rhûn's
-   border-only primary IDs, custom edge tables and arbitrary adjoining cliff/three-way seams.
-   v14 terrain now has read-only layout support, not an authoring implementation.
-   The existing [native terrain experiment](worldbuilder-terrain.md#isolated-native-experiment)
-   demonstrates rendering effects, not a general projection algorithm.
-3. **Gameplay constraints:** establish movement/buildability flag precedence,
-   slopes and formation clearance for infantry, cavalry, siege and monsters;
-   road/bridge flags, layers, destruction/rebuilding, AI base and rally footprints.
-   Use controlled native cases, not visual similarity as evidence. The
-   [corridor experiment](map-navigation.md) now measures path queries and
-   scripted traversal for four unit types across selected terrain flags, water
-   depths and height-only slopes. Tested integer water depths 5/6 straddle a
-   passability boundary, while unflagged height ridges up to about 87° remain
-   traversable. These do not settle placement, manual orders or other locomotors.
-4. **Remaining fields and variants:** legacy runtime behavior, lighting's third
-   array and extension-field meanings, camera unknowns, SidesList's leading byte, trigger/wave unknowns
-   and optional sections outside this corpus. Validate nonempty build lists and
-   edge tables against representative files or engine tests.
-5. **Integration limits:** menu discovery, cache checksum rules, multiplayer
-   transfer/hash agreement and sustained large-map performance.
+## Coverage boundaries
 
 A section is not complete merely because it round-trips. Completion requires
-version-specific, bounds-checked decoding; nonempty test cases; evidence for
-field units and references; and relevant engine tests for behavioral claims.
-Until then, retain unknown values and label the limitation. The coverage report
-deliberately has `semantics_complete: false` instead of a misleading percentage.
+version-specific, bounds-checked decoding; nonempty cases; field units and
+references; authoring support; and relevant native behavior evidence. Preserve
+unknown values and label limitations. `semantics_complete: false` in the
+coverage report is intentional.
+
+Open work is tracked in the [mapping guide](../README.md#what-remains) and its six
+areas. Compatibility checks are paused at the documented 9 October 2026 state.

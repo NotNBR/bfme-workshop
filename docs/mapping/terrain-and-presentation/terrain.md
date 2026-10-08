@@ -131,8 +131,8 @@ not a prerequisite for the format investigation. The next verification should
 cover irregular adjoining slopes and triangle orientation with controlled native
 cases and source analysis before a production-map change.
 
-See [map-file structure](map-format.md) for the surrounding container and
-[heightmap workflow](heightmap-workflow.md) for elevation authoring.
+See [map-file structure](../file-structure/format.md) for the surrounding container and
+[heightmap workflow](heightmaps.md) for elevation authoring.
 
 The isolated test generator and repeatable capture command are documented in
-[native screenshots](native-screenshots.md).
+[native screenshots](../compatibility/screenshots.md).

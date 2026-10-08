@@ -1,13 +1,13 @@
 # Agentic WorldBuilder workflow
 
 For original maps starting from an empty plane, follow the
-[rough-to-polished map creation workflow](../../../docs/map-creation-workflow.md)
-and its [worked design example](../../../docs/map-workflow-example.md). The commands
+[rough-to-polished map creation workflow](../../../docs/mapping/workflow.md)
+and its [worked design example](../../../docs/mapping/workflow-example.md). The commands
 below describe existing editing capabilities. The separate [Ashen March builder](../../../docs/ashen-march.md)
 now constructs a fresh native document and has passed a BFME2 empty-map loading test.
-Its [format findings](../../../docs/ashen-march-format-findings.md) distinguish native evidence from unverified editor behavior.
+Its [format findings](../../../docs/mapping/file-structure/ashen-march-findings.md) distinguish native evidence from unverified editor behavior.
 
-See [the native world-file analysis](../../../docs/map-format.md) for measured section
+See [the native world-file analysis](../../../docs/mapping/file-structure/format.md) for measured section
 layouts, dependency relationships, and the constraints on enlarging our maps.
 
 This toolset lets an agent make reproducible bulk edits to a native BFME2 map,

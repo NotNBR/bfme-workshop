@@ -27,7 +27,7 @@ repeat; this is native terrain painting rather than a new terrain shader.
 The launcher now uses Medium graphics to restore cast shadows, props and full
 textures; High stalled the large-map test. Lower directional sunlight and
 restrained accent lights reveal the terrain, with enough ambient light for play.
-The [research and technical log](ashen-march-format-findings.md#revision-2-repetition-density-and-natural-terrain)
+The [research and technical log](mapping/file-structure/ashen-march-findings.md#revision-2-repetition-density-and-natural-terrain)
 links the open algorithm references and records what was actually implemented.
 
 ## Painting passes and decisions
@@ -76,4 +76,4 @@ Native reports record loading, distinct camera views, simulation advancement, ex
 
 WorldBuilder open/save remains unverified because its control helper could not initialize. The route checks establish continuous terrain corridors; full native horde traversal, prolonged AI play, network play and competitive balance need further playtesting.
 
-See [technical and file-format findings](ashen-march-format-findings.md) for byte layouts, evidence and unresolved fields, and the [general map workflow](map-creation-workflow.md) for the reusable method.
+See [technical and file-format findings](mapping/file-structure/ashen-march-findings.md) for byte layouts, evidence and unresolved fields, and the [general map workflow](mapping/workflow.md) for the reusable method.
