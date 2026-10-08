@@ -1,5 +1,10 @@
 # Eight Kingdoms showcase
 
+https://github.com/user-attachments/assets/a994ccfd-c922-4103-a289-8723cdf06c83
+
+The embedded preview is 960 x 540 and 5,771,798 bytes, hosted as a private
+GitHub attachment retained in [media issue #1](https://github.com/NotNBR/bfmeXbar/issues/1).
+
 The [showcase trailer](media/Eight-Kingdoms-Trailer.mp4) is the revision-3
 1080p, 76-second export, compressed to 18,959,430 bytes (under 20 MB).
 This selected video is tracked in `media/`; generated captures and other exports
