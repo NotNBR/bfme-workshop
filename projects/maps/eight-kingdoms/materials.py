@@ -41,8 +41,14 @@ def classify(k,t):
     labels[snow]=7
     cx,cy=k.reference_world((583,631))
     labels[(x-cx)**2+(y-cy)**2<140**2]=8
+    # Broad meadow variation breaks the conspicuous solid grass disks without
+    # changing the flat starting terrain or adding a ring of dirt around it.
+    meadow=fbm(x+31,y-73,370,k.SEED+302,3)
     for px,py in k.STARTS:
-        labels[(x-px)**2+(y-py)**2<550**2]=0
+        d=np.hypot(x-px,y-py)
+        base=(d<550+80*grain)&dry&(slope<.35)
+        labels[base]=0
+        labels[base&(meadow>.13)]=1
     t.update(labels=labels,scree=scree,near_rock=near_rock)
     return dict(material_samples={name:int(np.count_nonzero(labels==i)) for i,name in enumerate(PALETTE)},
                 grass_on_steep_dry=int(np.count_nonzero((slope>1)&dry&np.isin(labels,[0,1]))),

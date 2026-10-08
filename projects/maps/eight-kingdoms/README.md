@@ -8,7 +8,8 @@ two small sanctuary islands. The kingdoms occupy a 900 x 960 tile region coverin
 9,000 x 9,600 world units. Surrounding ocean expands the active map to 1,140 x 1,200
 tiles. Twenty-four native stone bridges link the realms and their inner passes.
 There are eight neutral outposts, eight warg lairs, two inns and a central signal
-fire, with clear 550-unit construction circles at all starts.
+fire. Starting terrain is graded across a 550-unit radius; a clear 300-unit
+fortress core and two additional building pockets leave room among the foliage.
 
 ## Play
 
@@ -113,8 +114,14 @@ sparse fringes. Ruins, street-aligned buildings, broken boundaries and debris
 compose small scenes around neutral settlements. Each site has seeded variation
 in setbacks, orientation, building choices and missing boundary sections.
 Full sampled scenery footprints are checked against water, blocked terrain,
-route clearance, local relief and the 550-unit starting construction circles;
+route clearance, local relief and reserved starting space;
 building plots can move locally to find a sound foundation.
+Each base has three uneven vegetation pockets, with leafy trees, shrubs, ferns,
+grass and occasional stumps. Their size and position vary by a fixed seed.
+The inner 300 units and two 140-unit-radius building pockets remain clear;
+vegetation can grow inside the former 550-unit exclusion. Subtle meadow texture
+variation softens the old uniform grass circles. Small shrub, grass and stone
+groups also follow woodland edges and rocky shoulders elsewhere on the map.
 `detail-placement.json` records placements and foundation checks. The two internal bridges are removed. Their gaps remain as irregular water-filled rocky hollows with sloping banks.
 
 The native terrain grid grows to 1,200 x 1,260 samples. A 1,200-world-unit ocean
@@ -145,11 +152,14 @@ mod. Rebuilding does not launch the game or run native compatibility checks.
 
 ## Verification scope
 
-The authoring-grid audit checks clear construction circles, all starts connected
+The authoring-grid audit checks graded starting terrain, all starts connected
 through conservative bridge footprints, reachable bridge banks and central access.
 Serialized bridge checks verify all 24 names, positions, native local-Y axes and
 terrain-relative heights after the ocean translation. These are offline checks;
 they do not establish native pathfinding or visual quality.
+Scenery reports separately record footprint clearance, per-base vegetation and
+reserved building pockets. Terrain connectivity does not include native object
+collision, so placement checks are not a substitute for a gameplay test.
 
 When explicitly run, the native check loads BFME2, verifies eight instantiated player builder groups,
 captures four locations and checks extension faults and the original profile.
@@ -174,14 +184,26 @@ The October 2026 pass applies the documented
 - Bridge connectivity uses a conservative 275-unit half-length, with serialized
   origin/orientation checks. Starting clearance includes scenery footprints.
 
-The coastline, both natural internal gaps, ocean margin, material assignments,
-eight starts, 24 bridge transforms and gameplay sites are preserved. Current
+That pass preserved the coastline, both natural internal gaps, ocean margin,
+material assignments, eight starts, 24 bridge transforms and gameplay sites. Current
 build evidence is recorded below; previous native screenshots and trailer
 footage remain evidence of their original map hash.
 
 ## Recorded builds
 
-The current polish build (`findings-polish-02`) contains **3,522 objects** and
+The current vegetation build (`natural-vegetation-02`) contains **3,953 objects**:
+140 added base trees, 192 pieces of base undergrowth and 93 props in 36 meadow
+pockets, alongside small adjustments to existing placements. All eight bases
+have vegetation inside the former exclusion zone. Footprint checks keep the
+fortress cores, additional building pockets and route clearances open.
+Height, water, passability flags, starts and gameplay-site transforms are unchanged.
+All **98 offline unit tests** pass. Reports, package and diagnostic overview are
+in `artifacts/maps/eight-kingdoms/natural-vegetation-02/`; the map SHA-256 is
+`7ce3fb6d443ee6ebdfc701c0b6a42a1956e5274e3d9a6d15d4336188600cb2ad`.
+**Native checks remain paused; appearance and gameplay on this hash have not
+been verified in BFME2.**
+
+The lighting/scenery polish build (`findings-polish-02`) contains **3,522 objects** and
 passes **97 offline unit tests**. All eight starts and 24 bridge banks are
 connected in the authoring-grid audit; all serialized bridge placement checks
 pass. Terrain, materials, water, starts and gameplay-site transforms match the
@@ -190,8 +212,7 @@ The map SHA-256 is
 `d9afec1095cb12b31054be833bfd34a0f88860b1fc542c451689784cf613a3dc`.
 Local reports and a diagnostic overview are in
 `artifacts/maps/eight-kingdoms/findings-polish-02/`.
-**Native checks remain paused: this new hash has not been loaded or visually
-verified in BFME2.**
+This earlier polish hash was also checked offline only.
 
 The previous native-checked build contains 3,731 object records and passed 29 automated tests.
 BFME2 loaded the map, instantiated all eight player builder groups, rendered all

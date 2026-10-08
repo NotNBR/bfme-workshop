@@ -16,6 +16,21 @@ from bfmexbar.scenarios import eight_player
 
 
 class EightKingdomsTests(unittest.TestCase):
+    def test_base_vegetation_layout_reserves_distinct_building_pockets(self):
+        from bfmexbar.projects.maps.eight_kingdoms import build
+        from bfmexbar.projects.maps.eight_kingdoms.vegetation import base_layout
+        scenes=base_layout(build)
+        self.assertEqual(scenes,base_layout(build))
+        self.assertEqual(len(scenes),8)
+        shapes=[]
+        for scene in scenes:
+            a,b=scene['building_pockets']
+            self.assertGreater(math.dist(a[:2],b[:2]),a[2]+b[2])
+            for x,y,r in (a,b):
+                self.assertGreater(math.dist((x,y),scene['center'])-r,300)
+            shapes.append(tuple(round(p[2],3) for p in scene['clusters']))
+        self.assertEqual(len(set(shapes)),8)
+
     def test_scenery_footprint_does_not_encroach_on_start_construction_circle(self):
         from bfmexbar.projects.maps.eight_kingdoms import build
         with patch.object(build,'STARTS',[(0,0)]):

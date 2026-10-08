@@ -211,24 +211,31 @@ def audit(t):
 
 def start_clearance(px,py,footprint):
     """Distance from the conservative sampled footprint to the nearest start."""
+    return footprint_clearance(px,py,footprint,STARTS)
+
+
+def footprint_clearance(px,py,footprint,centers):
     radius=max(1,math.ceil(footprint/10))*10+5
     return min(math.hypot(max(abs(px-x)-radius,0),max(abs(py-y)-radius,0))
-               for x,y in STARTS)
+               for x,y in centers)
 
 
 def decorate(m,t):
     rng=random.Random(SEED);placed=Counter();occupied={};placement_checks=[]
+    from bfmexbar.projects.maps.eight_kingdoms.vegetation import base_layout
+    pockets=[p for scene in base_layout(sys.modules[__name__]) for p in scene['building_pockets']]
     text='\n'.join(p.read_text(encoding='cp1252') for p in (MOD/'data/ini/object').rglob('*.ini'))
     valid=set(re.findall(r'^\s*(?:Object|ChildObject|ObjectReskin)\s+(\w+)',text,re.M))
     def put(template,px,py,layer,angle=None,gap=40,protected=True,extra=(),z=0,
-            footprint=0,max_rise=None,clearance=130):
+            footprint=0,max_rise=None,clearance=130,start_radius=550):
         if template not in valid:raise ValueError('Unknown native asset: '+template)
         if not 20<px<WIDTH*10-20 or not 20<py<HEIGHT*10-20:return False
         iy,ix=grid_point((px,py))
         if protected:
             if t['blocked'][iy,ix] or t['road'][iy,ix]<clearance:return False
-            if any(math.hypot(px-a,py-b)<610 for a,b in STARTS):return False
-            if footprint and start_clearance(px,py,footprint)<=550:return False
+            if any(math.hypot(px-a,py-b)<start_radius+60 for a,b in STARTS):return False
+            if footprint and start_clearance(px,py,footprint)<=start_radius:return False
+            if any(footprint_clearance(px,py,footprint,[(x,y)])<=r for x,y,r in pockets):return False
         rise=0.
         if footprint:
             radius=max(1,math.ceil(footprint/10))
@@ -246,7 +253,8 @@ def decorate(m,t):
                    layer=layer,extra=extra,z=z)
         occupied.setdefault(cell,[]).append((px,py,gap));placed[template]+=1
         if footprint:placement_checks.append(dict(template=template,x=px,y=py,footprint=footprint,
-            relief=rise,max_relief=max_rise,layer=layer,start_clearance=start_clearance(px,py,footprint)))
+            relief=rise,max_relief=max_rise,layer=layer,start_clearance=start_clearance(px,py,footprint),
+            required_start_clearance=start_radius,route_clearance=clearance))
         return True
     # Runtime-verified stock bridge model, 550 world units long, native ramp meshes.
     for bridge in BRIDGES:

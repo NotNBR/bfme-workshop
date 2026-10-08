@@ -106,4 +106,7 @@ def populate(k,m,t,put,rng):
         place(rng.choice(['OptGrass08','OptGrass09','Fern01','PTStump01']),
               px,py,'WoodlandFringe',gap=38,footprint=7,max_rise=4,clearance=120)
         if counts.get('WoodlandFringe',0)>=430:break
-    return dict(layers=counts,settlement_scenes=scenes,rockfall_groups=len(anchors))
+    from bfmexbar.projects.maps.eight_kingdoms.vegetation import populate as vegetation
+    vegetation_report=vegetation(k,t,place)
+    return dict(layers=counts,settlement_scenes=scenes,rockfall_groups=len(anchors),
+                vegetation=vegetation_report)
