@@ -3,6 +3,7 @@
 | Guide | Contents |
 | --- | --- |
 | [Repository and setup](repository-layout.md) | Requirements, local configuration, project ownership and commands |
+| [Map-file specification](mapping/file-structure/specification.md) | Binary encodings, compression, chunks, fields, versions and companion files |
 | [BFME2 mapping](mapping/README.md) | File structure; terrain and presentation; navigation; scripts; players, economy and AI; compatibility |
 | [Map creation workflow](mapping/workflow.md) | From design and heightmap to an original native map |
 | [Strategic mod](../projects/strategic/README.md) | Camera, symbols, army caps and native extension |

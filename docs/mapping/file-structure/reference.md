@@ -1,6 +1,9 @@
 # Versioned map reference and coverage
 
 Detailed layouts, corpus evidence and authoring constraints for BFME II 1.06.
+The [map-file specification](specification.md) presents the format in parsing order,
+including exact encodings and field layouts. This page retains the coverage tables
+and research context.
 Start with the [six-area mapping guide](../README.md) for capabilities, tools and
 remaining work. This reference documents observed formats, not complete engine semantics.
 

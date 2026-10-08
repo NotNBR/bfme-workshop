@@ -18,6 +18,8 @@ covered; the full set of gameplay rules and authoring features is still in progr
 
 ## Start here
 
+- **Understand the files:** read the [technical map-file specification](file-structure/specification.md)
+  for binary layouts, encodings, sections, versions and companion files.
 - **Create a map:** follow the [creation workflow](workflow.md), then the
   [heightmap guide](terrain-and-presentation/heightmaps.md) if importing terrain.
 - **Inspect an existing map:** use the [file-format tools](file-structure/README.md)

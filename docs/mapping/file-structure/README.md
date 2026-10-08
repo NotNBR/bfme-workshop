@@ -4,8 +4,13 @@ BFME2 maps use a chunked binary document with a shared name table. Chunks descri
 terrain, objects, sides, scripts, water, cameras and other map state; many records
 refer to assets and rules in the installed game rather than embedding them.
 
+**Start with the [map-file specification](specification.md).** It describes the
+package, compression, primitive encodings, container, section payloads, version
+differences and cross-record references, with byte layouts and a worked hex example.
+
 | Reference | Use it for |
 | --- | --- |
+| [Map-file specification](specification.md) | The technical format description, read from outer file to individual fields |
 | [Container and terrain format](format.md) | Headers, compression, name IDs, properties, section offsets and spatial units |
 | [Versioned reference and coverage](reference.md) | Corpus results, section/version tables, additional record layouts and authoring constraints |
 | [Original-map construction findings](ashen-march-findings.md) | How The Ashen March was built without a donor map |

@@ -25,6 +25,10 @@ Eight Kingdoms showcase · 76 seconds · 5.77 MB preview ·
 
 ## Mapping tools and reference
 
+**[BFME II map-file specification](docs/mapping/file-structure/specification.md)**
+describes what a map package contains and how its binary data is structured:
+compression, chunks, fields, versions, references and companion files.
+
 The [mapping guide](docs/mapping/README.md) organizes authoring tools, file layouts,
 verified behavior and remaining work into six areas:
 
