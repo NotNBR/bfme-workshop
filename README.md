@@ -8,8 +8,8 @@ Built with help from [openbfme2 (Open-BFME-2)](https://github.com/Open-BFME/Open
 whose launch helpers, compatibility code and reverse-engineering work underpin
 the native BFME2 integration.
 
-**[Eight Kingdoms showcase trailer](projects/showcases/eight-kingdoms/media/Eight-Kingdoms-Trailer.mp4)**
-— 1080p, 76 seconds, 19 MB. Open the link to view or download the MP4.
+**[Download the Eight Kingdoms trailer](projects/showcases/eight-kingdoms/media/Eight-Kingdoms-Trailer.mp4?raw=true)**
+— 1080p, 76 seconds, 19 MB.
 
 ## What's inside
 
