@@ -12,6 +12,7 @@ import numpy as np
 from tools.worldbuilder.format import Map, Chunk, sha, differences, string
 from tools.worldbuilder.author import apply_recipe
 from tools.worldbuilder import cli
+from tools.worldbuilder.analyze import analyze, records
 
 
 def fixture():
@@ -39,6 +40,27 @@ def recipe(*operations):
 
 
 class WorldBuilderTests(unittest.TestCase):
+    def test_analysis_offsets_cover_file_and_expose_missing_sections(self):
+        data = fixture()
+        report = analyze(data)
+        self.assertEqual(report['chunks'][-1]['end_offset'], len(data))
+        self.assertTrue(report['blend_details']['tail_fully_consumed'])
+        self.assertEqual(report['blend_details']['textures'], 1)
+        self.assertIn('SidesList', report['unresolved_sections'])
+        self.assertEqual(report['file_sha256'], sha(data))
+
+    def test_water_geometry_is_decoded_and_truncation_is_rejected(self):
+        m = Map(fixture())
+        data = struct.pack('<II', 1, 7) + string('Pond') + string('Water')
+        data += struct.pack('<fB', 0.1, 0) + string('bump.tga') + string('sky.tga')
+        data += struct.pack('<I6fI', 3, 10, 10, 50, 10, 30, 40, 25) + string('shader') + string('depth')
+        m.chunks.append(Chunk(m.intern('StandingWaterAreas'), 2, data))
+        water = records(m, 'StandingWaterAreas')
+        self.assertEqual(water[0]['points'], [(10, 10), (50, 10), (30, 40)])
+        self.assertEqual(water[0]['water_height'], 25)
+        m.chunk('StandingWaterAreas').data = data[:-1]
+        with self.assertRaises(ValueError): records(m, 'StandingWaterAreas')
+
     def test_lossless_and_row_padded_flags(self):
         data = fixture()
         m = Map(data)

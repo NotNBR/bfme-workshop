@@ -1,5 +1,8 @@
 # Agentic WorldBuilder workflow
 
+See [the native world-file analysis](../../docs/map-format.md) for measured section
+layouts, dependency relationships, and the constraints on enlarging our maps.
+
 This toolset lets an agent make reproducible bulk edits to a native BFME2 map,
 then use WorldBuilder for visual refinement and its native save pass. The map
 remains a normal `.map` document. Original maps and installed game files are
