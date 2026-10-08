@@ -28,8 +28,17 @@ def main():
     parser.add_argument('--vanilla', action='store_true', help='Diagnostic run without the bfmeXbar mod')
     parser.add_argument('--dry-run', action='store_true')
     parser.add_argument('--map')
+    parser.add_argument('--map-check',action='store_true',help='Validate Ithilien Frontier with native render-target snapshots')
+    parser.add_argument('--frontier',action='store_true',help='Play the revealed Ithilien Frontier map as Mordor versus Elves')
     parser.add_argument('--battle', choices=['orcs-elves'], help='Start a prepared Mordor-versus-Elves battalion battle')
     args = parser.parse_args()
+    if args.map_check:
+        args.test=args.strategic=True
+        args.map=r'maps\map mp bfmexbar ithilien frontier.map'
+    if args.frontier:
+        if args.battle:parser.error('--frontier starts a standard skirmish; omit --battle.')
+        args.strategic=args.window=True
+        args.map=r'maps\map mp bfmexbar ithilien frontier.map'
     if args.showcase:
         args.battle='orcs-elves'
         args.window=True
@@ -70,9 +79,12 @@ def main():
     sys.dont_write_bytecode = True
     sys.path.insert(0, str(reference))
     import game_smoke
-    if args.battle:
+    if args.map_check:
+        import map_check
+        map_check.register(game_smoke)
+    if args.battle or args.frontier:
         import battle
-        battle.register(game_smoke,pathlib.Path(config['mod']),test=args.test)
+        battle.register(game_smoke,pathlib.Path(config['mod']),test=args.test and bool(args.battle))
     if args.strategic_check:
         import strategic_check
         strategic_check.register(game_smoke)
@@ -122,6 +134,7 @@ def main():
             '--seconds', '55' if args.battle else '30', '--min-frames', '100', '--timeout', '180',
             '--guard', config['game'],
         ])
+        if args.map_check:return map_check.validate(output)
         if args.zoom_check and status == 0:
             return zoom_check.validate(output)
         if args.strategic_check:
@@ -142,7 +155,11 @@ def main():
         'referenceTools': str(reference), 'mode': 'menu' if args.menu else 'human vs easy AI',
     }, indent=2))
     print('Native BFME2 is running. Close the game to finish this launcher.', flush=True)
-    result = game.run(7 * 24 * 3600)
+    if args.frontier:
+        import frontier
+        result=game.run(7*24*3600,tick=lambda g:frontier.tick(g,game_smoke))
+    else:
+        result = game.run(7 * 24 * 3600)
     profile_report, touched = guard.check()
     (output / 'interactive.json').write_text(json.dumps({
         'run': result, 'profile_guard': profile_report, 'profile_touched': touched,

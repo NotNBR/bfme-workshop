@@ -14,12 +14,14 @@ The binary reader, editor, previews and transaction/checkpoint tools run locally
 The WorldBuilder UI adapter is implemented but has **not been connected to a live
 editor**: this session's Computer Use Node helper crashes during initialization.
 Do not interpret a successful file parse or diagnostic preview as an editor or
-game verification. The large Ithilien map is not finished by this tooling task.
+game verification. A first native [Ithilien Frontier build](../../maps/ithilien-frontier/README.md)
+now uses the measured format and has a separate native game verification workflow.
 
 Supported: BFME2 HeightMapData v5, BlendTileData v18, Object v3. Unknown top-level
 chunks are preserved byte-for-byte. Unsupported formats fail explicitly.
-Resizing is deliberately not implemented yet: water, border, terrain, blend,
-start positions, cameras and script coordinates must all remain consistent.
+General-purpose resizing is not implemented. The dedicated `ithilien` builder
+handles its verified source layout: water, borders, terrain, blend arrays, objects,
+start positions and camera bookmarks. It refuses unhandled scripted coordinates.
 
 ## Fast authoring loop
 

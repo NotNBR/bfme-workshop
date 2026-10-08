@@ -54,6 +54,7 @@ def register(smoke, dll, trace=False, battle=False, showcase=False):
     reserves_rva=next(e.address for e in pe.DIRECTORY_ENTRY_EXPORT.symbols if e.name==b'bfxReserveDebug')
     pips_rva=next(e.address for e in pe.DIRECTORY_ENTRY_EXPORT.symbols if e.name==b'bfxPipScale')
     showcase_rva=next(e.address for e in pe.DIRECTORY_ENTRY_EXPORT.symbols if e.name==b'bfxShowcase')
+    capture_rva=next((e.address for e in pe.DIRECTORY_ENTRY_EXPORT.symbols if e.name==b'bfxCapture'),None)
     types_rva=next(e.address for e in pe.DIRECTORY_ENTRY_EXPORT.symbols if e.name==b'bfxSymbolTypes')
     battle_exports={key:next(e.address for e in pe.DIRECTORY_ENTRY_EXPORT.symbols if e.name==name)
                     for key,name in [('state',b'bfxBattleState'),('start',b'bfxStartBattle'),
@@ -84,6 +85,7 @@ def register(smoke, dll, trace=False, battle=False, showcase=False):
                 game.res['reserve_debug_address']=module+reserves_rva
                 game.res['symbol_types_address']=module+types_rva
                 game.res['pip_scale_address']=module+pips_rva
+                if capture_rva is not None:game.res['capture_address']=module+capture_rva
                 if showcase:
                     game.res['showcase_address']=module+showcase_rva
                     game.write(module+showcase_rva,struct.pack('<I',1))

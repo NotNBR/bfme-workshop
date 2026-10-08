@@ -233,9 +233,10 @@ flowchart TD
 
 For three times Grey Mountains' total area at roughly the same proportions, the
 proposed playable size is **840 x 953 tiles**, about 8,400 x 9,530 world units.
-With a 50-tile border, the stored grids would be 940 x 1,053. This is arithmetic,
-not evidence that WorldBuilder or BFME2 accepts those dimensions. Width/height
-limits and large-map runtime behavior remain to be tested.
+The subsequent [Ithilien Frontier build](../maps/ithilien-frontier/README.md)
+uses this playable size with Ithilien's 30-tile border: 900 x 1,013 stored samples.
+It passes short native BFME2 load/render checks. WorldBuilder UI acceptance,
+long-match performance and general engine size limits remain unverified.
 
 An enlargement should coordinate terrain, all blend/flag planes, borders, object
 and road positions, water geometry, player starts, trigger regions, waypoint links,

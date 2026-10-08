@@ -454,8 +454,9 @@ static void renderSymbols() {
     ((NoArgs)svt[5])(state);((NoArgs)svt[2])(state);
     bfxState.drawCalls++;
 }
+#include "capture.inc"
 static void __cdecl endHook(bool flip) {
-    __try {traceCamera(activeView,3);renderSymbols();}
+    __try {traceCamera(activeView,3);renderSymbols();captureFrame();}
     __except(EXCEPTION_EXECUTE_HANDLER) {bfxState.faults++;bfxState.lastError=GetExceptionCode();}
     ((EndFn)endOriginal)(flip);
 }

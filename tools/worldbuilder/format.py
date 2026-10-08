@@ -18,6 +18,11 @@ def sha(data):
     return hashlib.sha256(data).hexdigest()
 
 
+def tile_offset(x, y, cell_size):
+    """Native texture cells contain four 2x2 subtiles, not row-major subtile IDs."""
+    return 4 * (((y // 2) % cell_size) * cell_size + (x // 2) % cell_size) + (y % 2) * 2 + x % 2
+
+
 class Reader:
     def __init__(self, data):
         self.data, self.pos = data, 0

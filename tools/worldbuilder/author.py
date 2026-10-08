@@ -6,7 +6,7 @@ import struct
 
 import numpy as np
 
-from .format import Map, differences
+from .format import Map, differences, tile_offset
 
 
 def finite(value):
@@ -87,7 +87,7 @@ def apply_recipe(source, recipe):
             # Preserve repeating texture cells; WorldBuilder can feather the brush edge.
             yy, xx = np.indices(weight.shape)
             edge = texture['cell_size'] * 2
-            tiles = texture['tile_start'] + (yy % edge) * edge + (xx % edge)
+            tiles = texture['tile_start'] + tile_offset(xx, yy, texture['cell_size'])
             selection = weight > 0
             c = m.chunk('BlendTileData')
             data = bytearray(c.data)

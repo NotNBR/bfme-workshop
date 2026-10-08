@@ -9,10 +9,11 @@ from unittest.mock import patch
 
 import numpy as np
 
-from tools.worldbuilder.format import Map, Chunk, sha, differences, string
+from tools.worldbuilder.format import Map, Chunk, sha, differences, string, tile_offset
 from tools.worldbuilder.author import apply_recipe
 from tools.worldbuilder import cli
 from tools.worldbuilder.analyze import analyze, records
+from tools.worldbuilder.ithilien import resize
 
 
 def fixture():
@@ -40,6 +41,45 @@ def recipe(*operations):
 
 
 class WorldBuilderTests(unittest.TestCase):
+    def resize_fixture(self):
+        m = Map(fixture())
+        for name in ('TriggerAreas','StandingWaveAreas','CameraAnimationList',
+                     'WaypointsList','StandingWaterAreas','RiverAreas','NamedCameras'):
+            m.chunks.append(Chunk(m.intern(name),2 if name in ('StandingWaterAreas','RiverAreas') else 1,bytes(4)))
+        m.chunks.append(Chunk(m.intern('PlayerScriptsList'),1,b''))
+        return m
+
+    def test_resize_preserves_heights_props_and_unknown_chunks(self):
+        source = self.resize_fixture().encode()
+        m = resize(source,64,96)
+        terrain = m.heightmap()
+        self.assertEqual((terrain['width'],terrain['height'],terrain['border']),(68,100,2))
+        self.assertTrue(np.all(terrain['elevations']==2560))
+        self.assertEqual(m.blend()['arrays']['visible'].shape,(100,68))
+        self.assertAlmostEqual(m.objects()[0]['x'],25*64/26,places=4)
+        self.assertAlmostEqual(m.objects()[0]['y'],25*96/30,places=4)
+        self.assertEqual(m.objects()[0]['properties'],Map(source).objects()[0]['properties'])
+        self.assertEqual(m.chunk('MysteryChunk').data,Map(source).chunk('MysteryChunk').data)
+        self.assertEqual(Map(m.encode()).encode(),m.encode())
+
+    def test_resize_scales_water_and_rejects_unhandled_coordinates(self):
+        m = self.resize_fixture()
+        water = struct.pack('<II',1,7)+string('Ford')+string('Water')
+        water += struct.pack('<fB',.1,0)+string('bump')+string('sky')
+        water += struct.pack('<I6fI',3,10,10,50,10,30,40,25)+string('shader')+string('depth')
+        m.chunk('StandingWaterAreas').data=water
+        enlarged=resize(m.encode(),78,90)
+        pond=records(enlarged,'StandingWaterAreas')[0]
+        self.assertEqual(pond['points'],[(30,30),(150,30),(90,120)])
+        self.assertEqual(pond['water_height'],25)
+        m.chunk('TriggerAreas').data=struct.pack('<I',1)
+        with self.assertRaisesRegex(ValueError,'TriggerAreas'):resize(m.encode(),78,90)
+        with self.assertRaises(ValueError):resize(self.resize_fixture().encode(),1024,96)
+
+    def test_native_texture_subtiles_follow_cell_order(self):
+        self.assertEqual([tile_offset(x,0,4) for x in range(8)], [0,1,4,5,8,9,12,13])
+        self.assertEqual([tile_offset(x,1,4) for x in range(4)], [2,3,6,7])
+        self.assertEqual(tile_offset(220,210,4),24)  # Observed native Ithilien cell.
     def test_analysis_offsets_cover_file_and_expose_missing_sections(self):
         data = fixture()
         report = analyze(data)
@@ -86,7 +126,7 @@ class WorldBuilderTests(unittest.TestCase):
         self.assertEqual(m.chunk('ObjectsList').data, before.chunk('ObjectsList').data)
         self.assertEqual(m.heightmap()['elevations'][14, 14], round(112 / 0.0390625))
         self.assertTrue(np.array_equal(m.heightmap()['elevations'][:2], before.heightmap()['elevations'][:2]))
-        self.assertEqual(m.blend()['arrays']['tiles'][14, 14], 54)
+        self.assertEqual(m.blend()['arrays']['tiles'][14, 14], 60)
 
     def test_seeded_scatter_names_spacing_exclusions_and_replay(self):
         data = fixture()

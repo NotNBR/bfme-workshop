@@ -1,0 +1,76 @@
+# Ithilien Frontier
+
+A native BFME2 battlefield for bfmeXbar's strategic zoom, built by enlarging the
+original Ithilien landscape and adding a reproducible scenery pass. It retains
+BFME2 terrain, assets, native starts and river crossings.
+
+Double-click **Launch Ithilien Frontier.cmd** in the project root. It starts a
+standard Mordor-versus-Elves skirmish, fully revealed, at 1600 x 1200. This map
+launch uses normal base-building; the existing prepared Grey Mountains battle
+remains available through its own shortcut.
+
+## Battlefield
+
+- 840 x 953 playable tiles: 800,520 tiles, **3.001 times Grey Mountains' area**.
+- 900 x 1,013 stored terrain samples, including a 30-tile border.
+- Two native player starts and large open areas around the bases.
+- Four named fords, twelve river strips, wooded hills and Gondorian ruins.
+- 5,872 placed records, including **4,129 added** trees, undergrowth, rocks and ruins.
+- Scenery generation protects a 650-world-unit radius around base markers and
+  135 units either side of native road segments. Collision/pathfinding also depends
+  on the original terrain and object geometry; these spacing rules are not a full
+  pathfinding guarantee.
+- Native texture scale retained, with terrain texture subtiles and secondary
+  blends rephased for the expanded grid.
+- Strategic camera ceiling 16,000. Native distance fog disabled for the far view.
+
+## Build and editable files
+
+```powershell
+.\.venv\Scripts\python.exe -m tools.worldbuilder.ithilien
+.\.venv\Scripts\python.exe tools/bfme_host/launch.py --window --map-check
+```
+
+The builder reads only the isolated stock Ithilien copy, then writes:
+
+`Setup bfmeXbar.cmd` also rebuilds and registers the map after extracting the
+stock files, so repeating setup retains this launch option.
+
+```text
+runtime/bfme-host/mod/maps/map mp bfmexbar ithilien frontier/
+  map mp bfmexbar ithilien frontier.map
+  map.ini
+  map mp bfmexbar ithilien frontier_art.tga
+  map mp bfmexbar ithilien frontier_pic.tga
+```
+
+Preview images are copied from the source map because its overall terrain layout
+is retained. The builder adds a separate multiplayer entry to the isolated map
+cache; that registration is required for the native `-file` startup to start a
+skirmish. Use the short virtual path `maps\map mp bfmexbar ithilien frontier.map`.
+
+The default detail seed is 20261008. `--detail 0` produces a terrain/format probe;
+the normal build requests 4,200 additions and accepts fewer when spacing constraints
+leave no suitable locations. Dimensions and detail count have explicit CLI options.
+The builder refuses embedded scripts or unhandled coordinate sections instead of
+silently carrying stale positions into an enlarged map.
+
+The generated `.map` is a native WorldBuilder document. Direct WorldBuilder UI
+opening/saving has not been verified because the Computer Use helper failed to
+initialize. Original game files and the openbfme2 reference checkout remain untouched.
+
+## Verification and limits
+
+The native BFME2 smoke test loads the complete map, advances the simulation, reveals
+it, and photographs ruins, a river crossing, woodland and the strategic overview.
+Screenshots are read directly from the game's D3D9 render target because Windows'
+GDI capture returned a blank image. Readback is opt-in and inactive during normal
+play. Results and pictures are in `artifacts/ithilien-frontier/`.
+
+This is a first playable large-map build. Short native load/render checks do not
+establish long-match performance, army-scale pathfinding at every crossing, multiplayer
+compatibility or WorldBuilder's UI size limit. The current generator caps stored
+grids at 1,024 samples per axis as an experiment bound, not a discovered engine limit.
+
+Map data and copied retail previews stay in ignored runtime/artifact folders. Source
+tooling and recipes are in Git; the original BFME2 assets are not redistributed.
