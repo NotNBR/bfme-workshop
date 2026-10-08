@@ -1,7 +1,7 @@
 """Compose scenery around geology, forest edges and the neutral settlements."""
 
-from bfmexbar.paths import ROOT
 import math
+import random
 import numpy as np
 
 
@@ -13,22 +13,30 @@ def populate(k,m,t,put,rng):
             return True
         return False
     # Buildings align to a settlement street, with openings on the main road.
-    for o in list(m.objects()):
+    for site_index,o in enumerate(list(m.objects())):
         if o['template'] not in ('Outpost','Inn'):continue
         cx,cy=o['x'],o['y'];iy,ix=k.grid_point((cx,cy))
         nearest=min(k.STARTS,key=lambda p:math.dist(p,(cx,cy)))
-        angle=math.atan2(nearest[1]-cy,nearest[0]-cx)
+        site_rng=random.Random(k.SEED+site_index*7919)
+        angle=math.atan2(nearest[1]-cy,nearest[0]-cx)+site_rng.uniform(-.25,.25)
         c,s=math.cos(angle),math.sin(angle);actual=[]
         plots=[(-185,-180),(-195,165),(170,-200),(185,205),(-340,-65),(345,80)]
+        templates=['OsgiliathRuin01','OsgiliathRuin02','OsgiliathRuin06',
+                   'OsgiliathRuin24','GondorBuildingIthilien17','OsgiliathRuin21b']
+        site_rng.shuffle(templates)
+        # Uneven setbacks and a missing outer plot break the repeated six-house
+        # pattern, without filling the route through the settlement.
+        omitted=site_rng.choice((4,5))
         for i,(u,v) in enumerate(plots):
+            if i==omitted:continue
+            u+=site_rng.uniform(-45,45);v+=site_rng.uniform(-30,30)
             px=cx+u*c-v*s;py=cy+u*s+v*c
-            tpl=['OsgiliathRuin01','OsgiliathRuin02','OsgiliathRuin06',
-                 'OsgiliathRuin24','GondorBuildingIthilien17','OsgiliathRuin21b'][i]
+            tpl=templates[i]
             # Move a plot locally to find a sound foundation on the existing
             # terrain; never level a hillside merely to fit a decorative ruin.
             offsets=[(0,0)]+[(r*math.cos(a),r*math.sin(a))
                             for r in (35,70,105) for a in np.arange(0,math.tau,math.pi/4)]
-            rotation=angle+rng.uniform(-.12,.12)
+            rotation=angle+site_rng.uniform(-.22,.22)
             for ox,oy in offsets:
                 if place(tpl,px+ox,py+oy,'SettlementBuildings',angle=rotation,
                          gap=95,footprint=65,max_rise=7,clearance=100):
@@ -43,13 +51,16 @@ def populate(k,m,t,put,rng):
         # Low boundary fragments; the street and bridge approaches stay open.
         for side in (-1,1):
             for j in (-2,-1,1,2):
-                u,v=j*70,side*285
+                if site_rng.random()<.3:continue
+                u,v=j*70+site_rng.uniform(-15,15),side*site_rng.uniform(260,315)
                 place('GBWTopWall4',cx+u*c-v*s,cy+u*s+v*c,'BrokenBoundaries',
                       angle=angle,gap=45,footprint=30,max_rise=6,clearance=110)
-        scenes.append(dict(template=o['template'],center=[cx,cy],buildings=len(actual)))
+        scenes.append(dict(template=o['template'],center=[cx,cy],street_angle=angle,
+                           buildings=len(actual)))
     # Scree groups follow cliff toes and river terraces. Natural geology uses
     # natural rock assets; masonry rubble is confined to the ruins above.
     anchors=[]
+    dy,dx=np.gradient(t['z'],10)
     candidates=np.column_stack(np.nonzero(t['scree']&(t['slope']<.5)&(t['z']>k.WATER+25)))
     candidates=candidates[np.random.default_rng(k.SEED+71).permutation(len(candidates))]
     for iy,ix in candidates:
@@ -59,7 +70,11 @@ def populate(k,m,t,put,rng):
                  px,py,'RockfallAnchors',gap=48,footprint=33,max_rise=18,z=-3,clearance=135):
             anchors.append((px,py))
             for _ in range(rng.randint(3,7)):
-                a=rng.random()*math.tau;r=rng.uniform(48,115)
+                # Debris fans out down the local slope rather than forming a
+                # ring around each boulder. Nearly flat toes have no preferred axis.
+                downhill=math.atan2(-dy[iy,ix],-dx[iy,ix])
+                a=downhill+rng.uniform(-.85,.85) if t['slope'][iy,ix]>.05 else rng.random()*math.tau
+                r=rng.uniform(48,135)
                 place(rng.choice(['DarkRockGrey02','DarkRockGrey07','DarkRockGrey17','DarkRockGrey02']),
                       px+r*math.cos(a),py+r*math.sin(a),'TalusFragments',
                       gap=20,footprint=12,max_rise=9,z=-1.5,clearance=125)
@@ -70,7 +85,10 @@ def populate(k,m,t,put,rng):
         slope=t['slope'][iy,ix];g=t['grove'][iy,ix];z=t['z'][iy,ix]
         if g<.23 or slope>.43 or t['blocked'][iy,ix] or z>415:continue
         if rng.random()>g*.78:continue
-        evergreen=z>220 or (g>.72 and py>4800)
+        # Mixed edges between valley woods and foothills, with no artificial
+        # north/south species boundary through the middle of the map.
+        evergreen_chance=float(np.clip((z-175)/150+(g-.5)*.3,.08,.94))
+        evergreen=rng.random()<evergreen_chance
         pool=['TreeEvergreen03','TreeEvergreen03b','TreeEvergreen03c'] if evergreen else ['Tree01_L','Tree03a_L','Tree03a','Tree03aL_L']
         if place(rng.choice(pool),px,py,'EvergreenStands' if evergreen else 'ValleyWoodland',
                  gap=42 if evergreen else 40,footprint=6,max_rise=7,clearance=145):

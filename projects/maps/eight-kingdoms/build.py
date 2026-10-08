@@ -151,11 +151,10 @@ def add_water(m):
     # Continue the ocean beyond the heightmap, so tilted and strategic views
     # see surrounding sea instead of the renderer's black clear background.
     points=[(-16000,-16000),(25000,-16000),(25000,25600),(-16000,25600)]
-    data=struct.pack('<II',1,1)+string('Eight Kingdoms waterways')+string('Water')
-    data+=struct.pack('<fB',.035,0)+string('WaterRippleBump.tga')+string('SkyEnv.tga')
-    data+=struct.pack('<I',4)+b''.join(struct.pack('<2f',*p) for p in points)
-    data+=struct.pack('<I',int(WATER))+string('wtr_Riv03.W3D')+string('LUTDepthTint.tga')
-    m.chunk('StandingWaterAreas').data=data
+    from bfmexbar.formats.water import standing_water
+    m.chunk('StandingWaterAreas').data=standing_water([dict(id=1,name='Eight Kingdoms waterways',
+        layer='Water',uv_speed=.035,additive=0,bump_texture='WaterRippleBump.tga',sky_texture='SkyEnv.tga',
+        points=points,water_height=int(WATER),shader='wtr_Riv03.W3D',depth_colors='LUTDepthTint.tga')])
 
 
 
@@ -210,6 +209,13 @@ def audit(t):
     return result
 
 
+def start_clearance(px,py,footprint):
+    """Distance from the conservative sampled footprint to the nearest start."""
+    radius=max(1,math.ceil(footprint/10))*10+5
+    return min(math.hypot(max(abs(px-x)-radius,0),max(abs(py-y)-radius,0))
+               for x,y in STARTS)
+
+
 def decorate(m,t):
     rng=random.Random(SEED);placed=Counter();occupied={};placement_checks=[]
     text='\n'.join(p.read_text(encoding='cp1252') for p in (MOD/'data/ini/object').rglob('*.ini'))
@@ -222,11 +228,15 @@ def decorate(m,t):
         if protected:
             if t['blocked'][iy,ix] or t['road'][iy,ix]<clearance:return False
             if any(math.hypot(px-a,py-b)<610 for a,b in STARTS):return False
+            if footprint and start_clearance(px,py,footprint)<=550:return False
         rise=0.
         if footprint:
             radius=max(1,math.ceil(footprint/10))
             ground=t['z'][iy-radius:iy+radius+1,ix-radius:ix+radius+1]
             if ground.shape!=(radius*2+1,radius*2+1) or ground.min()<WATER+12:return False
+            if protected:
+                area=np.s_[iy-radius:iy+radius+1,ix-radius:ix+radius+1]
+                if t['blocked'][area].any() or t['road'][area].min()<clearance:return False
             rise=float(np.ptp(ground))
             if max_rise is not None and rise>max_rise:return False
         cell=(int(px//100),int(py//100));n=max(2,math.ceil(gap/100))
@@ -235,14 +245,16 @@ def decorate(m,t):
         add_object(m,template,px,py,rng.random()*math.tau if angle is None else angle,
                    layer=layer,extra=extra,z=z)
         occupied.setdefault(cell,[]).append((px,py,gap));placed[template]+=1
-        if footprint:placement_checks.append(dict(template=template,x=px,y=py,footprint=footprint,relief=rise,max_relief=max_rise,layer=layer))
+        if footprint:placement_checks.append(dict(template=template,x=px,y=py,footprint=footprint,
+            relief=rise,max_relief=max_rise,layer=layer,start_clearance=start_clearance(px,py,footprint)))
         return True
     # Runtime-verified stock bridge model, 550 world units long, native ramp meshes.
     for bridge in BRIDGES:
         px,py=bridge['center'];vx,vy=bridge['axis']
         elevation=t['z'][grid_point((px,py))]
         if not put('GondorIthilienBridge2',px,py,'Bridges',
-            angle=math.atan2(vy,vx)-math.pi/2,gap=90,protected=False,z=GROUND-elevation-1):
+            angle=math.atan2(vy,vx)-math.pi/2,gap=90,protected=False,z=GROUND-elevation-1,
+            extra=[('objectName',3,'EK_Bridge_'+bridge['name'])]):
             raise ValueError('Missing bridge '+bridge['name'])
     # Centerpiece is a neutral keep with a capturable signal fire in its forecourt.
     for tpl,p in [('DolGoldurCastle',(583,624)),('OsgiliathRuin01',(562,607)),
@@ -347,14 +359,8 @@ def main():
         'Eight realms, mountain passes and stone bridges around a ruined island citadel.' if k=='mapDescription' else v)
         for k,kind,v in fields])
     m.chunk('EnvironmentData').data=struct.pack('<ffB',3.,1.,1)+string('TSNoise2kNoGreen.tga')+string('TSCloudMed.tga')
-    # Warm clear daylight for this green landscape; the blank document's subdued
-    # Mordor lighting remains unchanged for other maps.
-    lighting=bytearray(m.chunk('GlobalLighting').data)
-    for time in range(4):
-        for target in range(3):
-            offset=4+(time*9+target)*36
-            struct.pack_into('<6f',lighting,offset,.32,.34,.37,.78,.76,.69)
-    m.chunk('GlobalLighting').data=bytes(lighting)
+    from bfmexbar.projects.maps.eight_kingdoms.presentation import daylight, bridge_audit
+    lighting_report=daylight(m)
     set_materials(m,PALETTE,t['labels'],t['blocked'])
     stages.append(checkpoint(m,'02-terrain-water-materials'))
     print('Terrain connectivity and eight construction areas pass.',flush=True)
@@ -362,6 +368,7 @@ def main():
     expose_ocean(m)
     stages.append(checkpoint(m,'03-detailed' if not args.terrain_only else '03-terrain-only'))
     data=m.encode();report=analyze(data)
+    bridge_placement=bridge_audit(sys.modules[__name__],Map(data)) if not args.terrain_only else None
     if report['unresolved_sections']:raise ValueError(report['unresolved_sections'])
     target=MOD/'maps'/NAME;target.mkdir(parents=True,exist_ok=True)
     path=target/(NAME+'.map');path.write_bytes(data)
@@ -375,7 +382,9 @@ def main():
         for item in sorted(target.iterdir()):
             if item.is_file():archive.write(item,Path(NAME)/item.name)
     report.update(seed=SEED,source_map=None,reference_height_sha256=sha(REFERENCE.read_bytes()),checkpoints=stages,grid_audit=checks,
-                  scenery=placed,bridges=BRIDGES,materials=material_report,world_coordinate_offset=WORLD_SHIFT,worldbuilder_verified=False,
+                  scenery=placed,bridges=BRIDGES,materials=material_report,lighting=lighting_report,
+                  bridge_placement=bridge_placement,world_coordinate_offset=WORLD_SHIFT,worldbuilder_verified=False,
+                  native_validation_status='not-run-for-this-build',
                   native_horde_paths_verified=False)
     (OUT/'build.json').write_text(json.dumps(report,indent=2)+'\n')
     probes=[]

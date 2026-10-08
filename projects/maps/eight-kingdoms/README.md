@@ -107,12 +107,14 @@ rock, scree below exposed slopes, shaded forest soil and snow on high, gentler
 surfaces. Steep river banks use rock instead of grass. Native terrain projection
 is retained; the custom cliff projection trial was rejected after a render check.
 
-Dark natural boulders and smaller fragments form rockfall groups at cliff toes.
-Leafy valley woods and evergreen foothill stands have undergrowth and sparse
-fringes. Ruins, street-aligned buildings, broken boundaries and debris compose
-small scenes around the neutral settlements. Each added scenery footprint is
-checked for shoreline clearance and local relief; building plots can move locally
-to find a sound foundation. Roads, approaches and starting circles remain clear.
+Dark natural boulders and smaller fragments form downhill rockfall fans at cliff
+toes. Leafy valley woods blend into evergreen foothills, with undergrowth and
+sparse fringes. Ruins, street-aligned buildings, broken boundaries and debris
+compose small scenes around neutral settlements. Each site has seeded variation
+in setbacks, orientation, building choices and missing boundary sections.
+Full sampled scenery footprints are checked against water, blocked terrain,
+route clearance, local relief and the 550-unit starting construction circles;
+building plots can move locally to find a sound foundation.
 `detail-placement.json` records placements and foundation checks. The two internal bridges are removed. Their gaps remain as irregular water-filled rocky hollows with sloping banks.
 
 The native terrain grid grows to 1,200 x 1,260 samples. A 1,200-world-unit ocean
@@ -126,27 +128,30 @@ still reach its outer edge. Larger trials exceeded native graphics-memory limits
 
 ## Rebuild
 
-Run from this worktree with the existing project environment or a local venv
-containing `src/tools/bfme_host/requirements.txt`:
+Follow [setup](../../../docs/repository-layout.md#python-and-local-configuration) to prepare the Python environment and local
+game assets, then run from the repository root:
 
 ```powershell
-$py = '..\bfmeXbar\.venv\Scripts\python.exe'
-& $py src/tools/bfme_host/prepare_eight_kingdoms.py
-& $py -m tools.worldbuilder.eight_kingdoms
-& $py -m unittest tests.test_eight_kingdoms tests.test_blank_map tests.test_worldbuilder tests.test_bfme_host -v
-& $py src/tools/bfme_host/launch.py --eight-kingdoms --map-check --map-tour artifacts/eight-kingdoms/tour.json
+.\.venv\Scripts\python.exe scripts/bfx.py map build eight-kingdoms --run-id my-polish-001
 ```
 
 The seeded generator saves empty, functional, terrain and detailed checkpoints,
 retains superseded checkpoint hashes, validates the complete native document,
 registers eight start positions and exports a map archive. `build.json` records
 the reference SHA-256, map SHA-256, scenery counts and authoring-grid checks.
+Each run writes `map/`, `previews/` and `validation/` under
+`artifacts/maps/eight-kingdoms/<run-id>/`, and installs the package in the local
+mod. Rebuilding does not launch the game or run native compatibility checks.
 
 ## Verification scope
 
 The authoring-grid audit checks clear construction circles, all starts connected
-through the intended bridge decks, reachable bridge banks and central access.
-The native check loads BFME2, verifies eight instantiated player builder groups,
+through conservative bridge footprints, reachable bridge banks and central access.
+Serialized bridge checks verify all 24 names, positions, native local-Y axes and
+terrain-relative heights after the ocean translation. These are offline checks;
+they do not establish native pathfinding or visual quality.
+
+When explicitly run, the native check loads BFME2, verifies eight instantiated player builder groups,
 captures four locations and checks extension faults and the original profile.
 It also orders two actual builders over horizontal and diagonal bridge spans,
 recording positions across the decks and arrival on the opposite banks.
@@ -156,13 +161,43 @@ The crossing probes cover individual builders on two bridges. They do not
 establish all-bridge horde movement, prolonged AI performance, network play or
 competitive balance. WorldBuilder open/save has not been verified.
 
-## Recorded build
+## Research polish
 
-The finished build contains 3,731 object records and passed 29 automated tests.
+The October 2026 pass applies the documented
+[lighting layout](../../../docs/mapping/terrain-and-presentation/lighting.md) and
+[bridge geometry](../../../docs/mapping/navigation/roads-and-bridges.md):
+
+- Named terrain/object sunlight slots replace byte-offset edits that also
+  brightened a fill light. Fill lights and unresolved fields are preserved.
+- Water uses the typed writer, retaining the original water polygon and settings.
+- Scenery follows slope, woodland transitions and varied settlement layouts.
+- Bridge connectivity uses a conservative 275-unit half-length, with serialized
+  origin/orientation checks. Starting clearance includes scenery footprints.
+
+The coastline, both natural internal gaps, ocean margin, material assignments,
+eight starts, 24 bridge transforms and gameplay sites are preserved. Current
+build evidence is recorded below; previous native screenshots and trailer
+footage remain evidence of their original map hash.
+
+## Recorded builds
+
+The current polish build (`findings-polish-02`) contains **3,522 objects** and
+passes **97 offline unit tests**. All eight starts and 24 bridge banks are
+connected in the authoring-grid audit; all serialized bridge placement checks
+pass. Terrain, materials, water, starts and gameplay-site transforms match the
+previous build. Only `ObjectsList` and `GlobalLighting` payloads changed.
+The map SHA-256 is
+`d9afec1095cb12b31054be833bfd34a0f88860b1fc542c451689784cf613a3dc`.
+Local reports and a diagnostic overview are in
+`artifacts/maps/eight-kingdoms/findings-polish-02/`.
+**Native checks remain paused: this new hash has not been loaded or visually
+verified in BFME2.**
+
+The previous native-checked build contains 3,731 object records and passed 29 automated tests.
 BFME2 loaded the map, instantiated all eight player builder groups, rendered all
 four camera views and completed both native builder crossing probes with no
 extension faults or original-profile changes. The packaged map SHA-256 is
 `f4d7f626bc2863adb86abddbea90b3545187b0d5570623090b8691218a0d21ea`.
 
-The native tour and current 8K photograph include both reshaped internal
+That native tour and 8K photograph include both reshaped internal
 hollows. The photograph metadata records the matching map hash.

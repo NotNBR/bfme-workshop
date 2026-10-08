@@ -1,5 +1,6 @@
 """Eight-player document relationships and actual launcher slot writes."""
 import json
+import math
 from pathlib import Path
 import struct
 import tempfile
@@ -7,7 +8,7 @@ from types import SimpleNamespace
 import unittest
 from unittest.mock import patch
 
-from bfmexbar.mapkit.blank import create, starts
+from bfmexbar.mapkit.blank import create, starts, add_object
 from bfmexbar.formats.map import Map
 from bfmexbar.mapkit.analyze import records, nested
 from bfmexbar.projects.maps.ithilien_frontier import build as ithilien
@@ -15,6 +16,51 @@ from bfmexbar.scenarios import eight_player
 
 
 class EightKingdomsTests(unittest.TestCase):
+    def test_scenery_footprint_does_not_encroach_on_start_construction_circle(self):
+        from bfmexbar.projects.maps.eight_kingdoms import build
+        with patch.object(build,'STARTS',[(0,0)]):
+            # A center beyond the old 610-unit exclusion can still put a
+            # large ruin inside the 550-unit construction circle.
+            self.assertLess(build.start_clearance(611,0,65),550)
+            self.assertGreater(build.start_clearance(650,0,65),550)
+            self.assertLess(build.start_clearance(440,440,65),550)
+            self.assertGreater(build.start_clearance(611,0,6),550)
+
+    def test_daylight_preserves_fill_lights_directions_and_unknown_fields(self):
+        from bfmexbar.formats.lighting import decode
+        from bfmexbar.projects.maps.eight_kingdoms.presentation import daylight
+        from tests.unit.test_lighting import LightingTests
+        m=create(80,80,3)
+        chunk=m.chunk('GlobalLighting')
+        chunk.data=LightingTests().fixture(8)
+        before=decode(chunk.data,chunk.version)
+        daylight(m)
+        after=decode(chunk.data,chunk.version)
+        for old,new in zip(before['configurations'],after['configurations']):
+            for a,b in zip(old,new):
+                if a['light_index']==0 and a['target'] in ('terrain','objects'):
+                    self.assertEqual(a['direction'],b['direction'])
+                    self.assertTrue(all(0<v<1 for v in b['diffuse']))
+                    self.assertNotEqual(a['ambient'],b['ambient'])
+                else:self.assertEqual(a,b)
+        for key in before.keys()-{'configurations','overbright_value'}:
+            self.assertEqual(before[key],after[key])
+        self.assertEqual(after['overbright_value'],1.)
+
+    def test_bridge_audit_checks_native_axis_relative_height_and_position(self):
+        from bfmexbar.projects.maps.eight_kingdoms.presentation import bridge_audit
+        k=SimpleNamespace(GROUND=100,WORLD_SHIFT=90,
+                          BRIDGES=[dict(name='test',center=(300,300),axis=(1,0))])
+        def fixture(x=390,z=-1,angle=-math.pi/2):
+            m=create(80,80,3,elevation=100)
+            add_object(m,'GondorIthilienBridge2',x,390,angle=angle,z=z,
+                       extra=[('objectName',3,'EK_Bridge_test')])
+            return Map(m.encode())
+        self.assertTrue(bridge_audit(k,fixture())['bridges'][0]['passed'])
+        for change in (dict(x=400),dict(z=99),dict(angle=0)):
+            with self.subTest(change=change),self.assertRaises(ValueError):
+                bridge_audit(k,fixture(**change))
+
     def test_visible_ocean_expansion_preserves_heights_and_relative_positions(self):
         from bfmexbar.projects.maps.eight_kingdoms.build import expose_ocean
         m=create(80,90,12);starts(m,[(100,200),(600,700)])

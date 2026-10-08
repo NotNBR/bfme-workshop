@@ -76,7 +76,9 @@ def build(k):
             abutment|=(np.abs(across)<70)&(longitudinal>240)&(longitudinal<390)
         bed=(np.abs(along)<155)&(np.abs(across)<92)
         z[bed]=20
-        deck|=(np.abs(along)<=300)&(np.abs(across)<=64)
+        # Conservative authoring-grid proxy inside the documented 76 x 275
+        # model half-extents. This is not a replacement for native ramp layers.
+        deck|=(np.abs(along)<=275)&(np.abs(across)<=64)
         road=np.minimum(road,k.distance(x,y,bridge['ends']))
     # Preserve the internal hollows without the former bridge's rectangular bed
     # or level abutments. Uneven oval rims blend into the surrounding rock slopes.
