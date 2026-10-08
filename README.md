@@ -56,6 +56,8 @@ The runtime check requires actual skirmish mode, at least 100 advancing simulati
 
 ## Project layout
 
+- `tools/worldbuilder/`: repeatable native map edits, scenery recipes, previews, checkpoints, and a WorldBuilder UI adapter. See [the authoring workflow](tools/worldbuilder/README.md) for commands and verification limits.
+
 - `tools/bfme_host/`: original-game launcher, isolated runtime preparation, map-camera and command-limit builder.
 - `tests/test_bfme_host.py`: binary-map preservation and decoder/cap checks.
 - `tools/import_bfme.py`: shared BIG archive reader.

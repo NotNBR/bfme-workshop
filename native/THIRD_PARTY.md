@@ -10,6 +10,8 @@ Source: https://github.com/OpenSAGE/OpenSAGE
 
 OpenSAGE's complete license notice is preserved in [OPENSAGE-LICENSE.md](OPENSAGE-LICENSE.md), including its reference to EA-derived components. [OPENSAGE-LICENSE-EA.md](OPENSAGE-LICENSE-EA.md) is also preserved. The adapter does not embed EA game binaries or claim ownership of original art.
 
+`tools/worldbuilder/` uses native map layouts cross-checked on 8 October 2026 with OpenSAGE's `HeightMapData`, `BlendTileData`, `BlendTileTexture`, `MapObject`, `AssetPropertyCollection`, `AssetProperty`, and row-padded bit-array reader. It preserves unedited native chunks. The authoring operations, transaction workflow, diagnostic preview and Computer Use session adapter are project code. Retail maps used for local verification remain ignored runtime inputs.
+
 ## Recoil / Spring
 
 Source and releases: https://github.com/beyond-all-reason/RecoilEngine
