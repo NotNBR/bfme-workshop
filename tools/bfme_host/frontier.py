@@ -3,7 +3,7 @@ import struct
 import json
 
 
-def tick(game,smoke):
+def tick(game,smoke,title='Ithilien Frontier'):
     frame,mode=game.logic()
     if mode!=2 or frame is None or frame<3 or game.res.get('frontier_initialized'):return
     def ready(g,results):
@@ -11,7 +11,7 @@ def tick(game,smoke):
         (smoke.OUT/'frontier-live.json').write_text(json.dumps({
             'ready':True,'pid':g.pid,'frame':g.logic()[0],
             'factions':g.res.get('battle_factions'),'revealed':True,
-            'camera_height':900,'map':'Ithilien Frontier',
+            'camera_height':900,'map':title,
         },indent=2))
     def setup(g,tid,ctx):
         player=g.u32(g.u32(g.base+0x9FEEE8)+0x10)

@@ -21,20 +21,20 @@ ROOT = Path(__file__).resolve().parents[2]
 NAME = 'map mp bfmexbar ithilien frontier'
 
 
-def cache_entry(path, m):
+def cache_entry(path, m, name=NAME, title='Ithilien Frontier', description='A vast wooded frontier of Gondor, ancient ruins and four river crossings.'):
     cache=ROOT/'runtime/bfme-host/mod/maps/mapcache.ini'
     text=cache.read_text(encoding='cp1252')
     def escaped(raw):
         return ''.join(chr(c) if (48<=c<=57 or 65<=c<=90 or 97<=c<=122) else f'_{c:02X}' for c in raw)
-    key=escaped(('maps\\'+NAME+'\\'+NAME+'.map').encode('ascii'))
+    key=escaped(('maps\\'+name+'\\'+name+'.map').encode('ascii'))
     text=re.sub(r'(?ms)^MapCache '+re.escape(key)+r'\s*\n.*?^END\s*\n?', '',text)
     t=m.heightmap();w=(t['width']-2*t['border'])*10;h=(t['height']-2*t['border'])*10
     lines=[f'MapCache {key}',f'  fileSize = {path.stat().st_size}',
            f'  fileCRC = {zlib.crc32(path.read_bytes())}', '  timestampLo = 0','  timestampHi = 0',
            '  isOfficial = yes','  isMultiplayer = yes','  isScenarioMP = no','  numPlayers = 2',
            '  extentMin = X:0.00 Y:0.00 Z:0.00',f'  extentMax = X:{w:.2f} Y:{h:.2f} Z:0.00',
-           '  displayName = '+escaped('Ithilien Frontier'.encode('utf-16-le')),
-           '  description = '+escaped('A vast wooded frontier of Gondor, ancient ruins and four river crossings.'.encode('utf-16-le'))]
+           '  displayName = '+escaped(title.encode('utf-16-le')),
+           '  description = '+escaped(description.encode('utf-16-le'))]
     for o in m.objects():
         for k,_,v in o['properties']:
             if k=='waypointName' and re.fullmatch(r'Player_\d+_Start',v):

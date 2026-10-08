@@ -3,8 +3,9 @@
 For original maps starting from an empty plane, follow the
 [rough-to-polished map creation workflow](../../docs/map-creation-workflow.md)
 and its [worked design example](../../docs/map-workflow-example.md). The commands
-below describe existing editing capabilities; they do not yet create a verified
-blank native document.
+below describe existing editing capabilities. The separate [Ashen March builder](../../docs/ashen-march.md)
+now constructs a fresh native document and has passed a BFME2 empty-map loading test.
+Its [format findings](../../docs/ashen-march-format-findings.md) distinguish native evidence from unverified editor behavior.
 
 See [the native world-file analysis](../../docs/map-format.md) for measured section
 layouts, dependency relationships, and the constraints on enlarging our maps.

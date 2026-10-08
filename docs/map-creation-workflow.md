@@ -8,6 +8,11 @@ This is the authoring workflow for future original bfmeXbar maps. It is a design
 and production method, not a claim that a new map has already been built. The
 [worked example](map-workflow-example.md) applies it to a fresh LOTR-inspired theme.
 
+The first actual from-scratch implementation is now [The Ashen March](ashen-march.md).
+Its [technical log](ashen-march-format-findings.md) records the new-document constructor,
+native validation and remaining editor/playtest limitations. Use that measured path
+where the capability table below still describes the earlier toolset.
+
 ## The starting point
 
 Start with a **new, empty, uniformly elevated plane**. Choose a theme, playing

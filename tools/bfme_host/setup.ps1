@@ -19,6 +19,8 @@ Push-Location $projectDir
 try {
     & $pythonExe -m tools.worldbuilder.ithilien
     if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+    & $pythonExe -m tools.worldbuilder.ashen
+    if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 } finally { Pop-Location }
 & $pythonExe (Join-Path $PSScriptRoot 'prepare.py')
 if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }

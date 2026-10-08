@@ -13,9 +13,16 @@ from PIL import Image
 OUT=Path(__file__).resolve().parents[2]/'artifacts/ithilien-frontier/photo'
 SIZE=8000
 TILE_W,TILE_H=1600,720
+TITLE='Ithilien-Frontier'
+FOCUS=(4200,4765,50)
 
 
-def register(smoke):
+def register(smoke,tour=None):
+    global OUT,TITLE,FOCUS
+    if tour:
+        config=json.loads(tour.read_text())
+        OUT=Path(__file__).resolve().parents[2]/config['photo_output']
+        TITLE=config['photo_name'];FOCUS=tuple(config['photo_focus'])
     original=smoke.skirmish_tick
     original_run=smoke.Game.run
     def run(self,timeout,tick=None,tick_every=1.0):
@@ -57,7 +64,7 @@ def register(smoke):
                     x,y=tiles[stage]
                     # 1.25 world units per final pixel; camera is 20 degrees off vertical.
                     left=-5000+x*1.25;top=5000-y*1.25
-                    game.write(game.res['photo_address'],struct.pack('<I8f',1,4200,4765,50,
+                    game.write(game.res['photo_address'],struct.pack('<I8f',1,*FOCUS,
                                math.radians(70),left,top-1500,left+2000,top))
                     positioned=True;next_frame=frame+3
                 else:
@@ -80,8 +87,8 @@ def validate(output):
     for y in range(0,SIZE,TILE_H):
         for x in range(0,SIZE,TILE_W):
             with Image.open(OUT/f'tile-{x}-{y}.png') as tile:image.paste(tile,(x,y))
-    image.save(OUT/'Ithilien-Frontier-8000.png')
-    image.save(OUT/'Ithilien-Frontier-8000.jpg',quality=95,subsampling=0)
+    image.save(OUT/(TITLE+'-8000.png'))
+    image.save(OUT/(TITLE+'-8000.jpg'),quality=95,subsampling=0)
     image.thumbnail((1600,1600));image.save(OUT/'preview.jpg',quality=93)
     (OUT/'capture.json').write_text(json.dumps(dict(native=True,width=SIZE,height=SIZE,tiles=60,
         elevation_degrees=70,projection='orthographic',hud='excluded by tile framing',

@@ -1,5 +1,7 @@
 # bfmeXbar
 
+**New original map:** [The Ashen March](docs/ashen-march.md), a dark Gondorian frontier with broken ridges, ruined watches and a deadwood flank. Run **Launch Ashen March.cmd**. [Technical findings](docs/ashen-march-format-findings.md) document its from-scratch construction.
+
 BFME2 remains the running game. Its native animation, skinning, movement, formations, cursor, combat and interface are preserved. Far zoom now transitions to an orthographic strategic view with unit and building symbols. The extension also increases camera zoom bounds and command-point ceilings; extreme-scale simulation work is still in development.
 
 ## Play

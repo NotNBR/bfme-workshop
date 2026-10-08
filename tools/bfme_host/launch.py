@@ -28,21 +28,26 @@ def main():
     parser.add_argument('--vanilla', action='store_true', help='Diagnostic run without the bfmeXbar mod')
     parser.add_argument('--dry-run', action='store_true')
     parser.add_argument('--map')
+    parser.add_argument('--map-tour',type=pathlib.Path,help='JSON output directory and native camera shots for --map-check')
+    parser.add_argument('--ashen',action='store_true',help='Play The Ashen March with revealed terrain and strategic controls')
     parser.add_argument('--map-check',action='store_true',help='Validate Ithilien Frontier with native render-target snapshots')
     parser.add_argument('--frontier',action='store_true',help='Play the revealed Ithilien Frontier map as Mordor versus Elves')
     parser.add_argument('--map-photo',action='store_true',help='Render a tiled 8000-pixel map portrait')
     parser.add_argument('--battle', choices=['orcs-elves'], help='Start a prepared Mordor-versus-Elves battalion battle')
     args = parser.parse_args()
+    if args.ashen:
+        args.frontier=True
+        args.map=r'maps\map mp bfmexbar ashen march.map'
     if args.map_photo:
         args.test=args.strategic=True
-        args.map=r'maps\map mp bfmexbar ithilien frontier.map'
+        args.map=args.map or r'maps\map mp bfmexbar ithilien frontier.map'
     if args.map_check:
         args.test=args.strategic=True
-        args.map=r'maps\map mp bfmexbar ithilien frontier.map'
+        args.map=args.map or r'maps\map mp bfmexbar ithilien frontier.map'
     if args.frontier:
         if args.battle:parser.error('--frontier starts a standard skirmish; omit --battle.')
         args.strategic=args.window=True
-        args.map=r'maps\map mp bfmexbar ithilien frontier.map'
+        args.map=args.map or r'maps\map mp bfmexbar ithilien frontier.map'
     if args.showcase:
         args.battle='orcs-elves'
         args.window=True
@@ -85,10 +90,10 @@ def main():
     import game_smoke
     if args.map_photo:
         import map_photo
-        map_photo.register(game_smoke)
+        map_photo.register(game_smoke,args.map_tour)
     if args.map_check:
         import map_check
-        map_check.register(game_smoke)
+        map_check.register(game_smoke,args.map_tour)
     if args.battle or args.frontier:
         import battle
         battle.register(game_smoke,pathlib.Path(config['mod']),test=args.test and bool(args.battle))
@@ -165,7 +170,8 @@ def main():
     print('Native BFME2 is running. Close the game to finish this launcher.', flush=True)
     if args.frontier:
         import frontier
-        result=game.run(7*24*3600,tick=lambda g:frontier.tick(g,game_smoke))
+        title='The Ashen March' if args.ashen else 'Ithilien Frontier'
+        result=game.run(7*24*3600,tick=lambda g:frontier.tick(g,game_smoke,title))
     else:
         result = game.run(7 * 24 * 3600)
     profile_report, touched = guard.check()

@@ -9,17 +9,27 @@ ROOT=Path(__file__).resolve().parents[2]
 OUT=ROOT/'artifacts/ithilien-frontier'
 
 
-def register(smoke):
+def register(smoke,tour=None):
+    global OUT
+    map_hash=None
     original=smoke.skirmish_tick
     # World positions in the authored 840 x 953 map; heights remain native units.
     shots=[('ruined-settlement',1050,4700,1600),('wooded-hills',3500,6750,1800),
            ('mountain-pass',3550,8250,2300),('strategic-overview',4200,4765,15500)]
+    if tour:
+        config=json.loads(tour.read_text())
+        map_hash=config.get('map_sha256')
+        OUT=ROOT/config['output']
+        shots=config['shots']
+        if len(shots)!=4:raise ValueError('Native validation requires four distinct camera shots')
+    OUT.mkdir(parents=True,exist_ok=True)
     def factory(args,samples,mode):
         args.seconds=65
         basic=original(args,samples,mode)
         stage=0;pending=None;next_frame=5
         def tick(game):
             nonlocal stage,pending,next_frame
+            if map_hash:game.res['authored_map_sha256']=map_hash
             result=basic(game)
             frame,current=game.logic()
             if current!=mode or frame is None:return result
@@ -64,7 +74,7 @@ def validate(output):
     if not any(frame and frame>=100 and mode==2 for _,frame,mode in report['samples']):errors.append('Insufficient skirmish frames')
     if report.get('profile_touched'):errors.append('Original profile changed')
     result=dict(outcome='pass' if not errors else 'fail',errors=errors,shots=shots,
-                game_outcome=report['outcome'],map=report['args'])
+                game_outcome=report['outcome'],map=report['args'],authored_map_sha256=report['run'].get('authored_map_sha256'))
     (OUT/'native-validation.json').write_text(json.dumps(result,indent=2))
     print(json.dumps(result,indent=2))
     return 1 if errors else 0
