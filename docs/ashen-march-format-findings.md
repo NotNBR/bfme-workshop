@@ -245,3 +245,9 @@ advancement and profile/extension checks. Map SHA-256:
 The overview no longer shows the dominant large cloudy soil motif; finite native
 texture repetition is still possible. `graphics-review.json` records the preset
 alongside this hash. Geometry, routes and the 4,521 placements are unchanged.
+
+The final candidate's 8K portrait completed with 60 native tiles and zero extension
+faults; its JPEG is 15,723,092 bytes. The Full HD previews were regenerated from
+this candidate. Smaller native texture repeats can still be seen in broad empty
+ground at overview scale; the large material islands and prominent cloudy motif
+have been reduced, not replaced by a nonrepeating terrain shader.
