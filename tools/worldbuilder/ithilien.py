@@ -15,6 +15,7 @@ import numpy as np
 from .format import Map, Reader, chunks, string, sha, tile_offset
 from .analyze import records, analyze
 from .cli import preview
+from .relief import sculpt
 
 ROOT = Path(__file__).resolve().parents[2]
 NAME = 'map mp bfmexbar ithilien frontier'
@@ -210,6 +211,7 @@ def main():
     if not 0<=args.detail<=10000:p.error('Detail count must be 0..10000')
     source=ROOT/'runtime/bfme-host/mod/maps/map wor ithilien/map wor ithilien.map'
     original=source.read_bytes();m=resize(original,args.width,args.height)
+    relief=sculpt(m)
     scenery=detail(m,count=args.detail) if args.detail else dict(count=0)
     data=m.encode();report=analyze(data)
     if report['unresolved_sections']:raise ValueError(report['unresolved_sections'])
@@ -222,7 +224,7 @@ def main():
     # Native distance fog would obscure the new strategic view at the stock 2000 units.
     (target/'map.ini').write_text('; bfmeXbar Ithilien Frontier\nWaterTransparency\n  ReflectionPlaneZ = 25\n  ReflectionOn = Yes\nEnd\nWeather\n  HardwareFogEnable = No\nEnd\nAIData\n  LowLodTreeName = TreeLowLODGreyHavens\nEnd\n',encoding='ascii')
     output=ROOT/'artifacts/ithilien-frontier';output.mkdir(parents=True,exist_ok=True)
-    report.update(source_sha256=sha(original),scenery=scenery,area_vs_grey=args.width*args.height/266750)
+    report.update(source_sha256=sha(original),scenery=scenery,relief=relief,area_vs_grey=args.width*args.height/266750)
     (output/'build.json').write_text(json.dumps(report,indent=2))
     preview(path,output/'overview.png')
     if source.read_bytes()!=original:raise AssertionError('Source changed')

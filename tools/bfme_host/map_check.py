@@ -1,5 +1,4 @@
 """Native camera tour and render-target snapshots for the large map."""
-import ctypes
 import json
 from pathlib import Path
 import struct
@@ -13,8 +12,8 @@ OUT=ROOT/'artifacts/ithilien-frontier'
 def register(smoke):
     original=smoke.skirmish_tick
     # World positions in the authored 840 x 953 map; heights remain native units.
-    shots=[('ruined-settlement',2100,2500,850),('river-ford',4200,4080,1000),
-           ('north-woods',5500,6900,1100),('strategic-overview',4200,4765,15500)]
+    shots=[('ruined-settlement',1050,4700,1600),('wooded-hills',3500,6750,1800),
+           ('mountain-pass',3550,8250,2300),('strategic-overview',4200,4765,15500)]
     def factory(args,samples,mode):
         args.seconds=65
         basic=original(args,samples,mode)
@@ -33,19 +32,17 @@ def register(smoke):
                     picture=Image.frombytes('RGB',(w,h),raw,'raw','BGRX',pitch,1)
                     destination=OUT/(pending+'.png');picture.save(destination)
                     deviation=sum(ImageStat.Stat(picture).stddev)/3
-                    game.res.setdefault('map_shots',[]).append(dict(name=pending,path=str(destination),stddev=deviation,frame=frame))
+                    view=game.u32(game.base+0x9FEA3C)
+                    focus=struct.unpack('<3f',game.read(view+0xC,12))
+                    game.res.setdefault('map_shots',[]).append(dict(name=pending,path=str(destination),stddev=deviation,frame=frame,focus=focus))
                     pending=None;stage+=1;next_frame=frame+4
             if stage<len(shots) and frame>=next_frame and not pending:
                 name,x,y,height=shots[stage]
                 if game.res.get('map_shot_position')!=name:
                     def move(g,tid,ctx):
-                        mem=g.k.VirtualAllocEx(ctypes.c_void_p(g.hproc),None,12,0x3000,4)
-                        if not mem or not g.write(mem,struct.pack('<3f',x,y,80)):raise RuntimeError('Cannot position map camera')
-                        view=g.u32(g.base+0x9FEA3C)
                         player=g.u32(g.u32(g.base+0x9FEEE8)+0x10)
-                        return {'calls':[{'call':g.base+0x739790,'ecx':g.u32(g.base+0x9FE74C),'args':[g.u32(player+0x54)]},
-                                         {'call':g.base+0x8D55D,'ecx':view,'args':[mem]},
-                                         {'call':g.base+0x8D2B8,'ecx':view,'args':[struct.unpack('<I',struct.pack('<f',height))[0]]}]}
+                        g.write(g.res['photo_address'],struct.pack('<I8f',2,x,y,0,0,height,0,0,0))
+                        return {'call':g.base+0x739790,'ecx':g.u32(g.base+0x9FE74C),'args':[g.u32(player+0x54)]}
                     game.arm('GameEngine::update',move)
                     game.res['map_shot_position']=name;next_frame=frame+22
                 else:

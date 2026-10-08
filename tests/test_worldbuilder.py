@@ -14,6 +14,7 @@ from tools.worldbuilder.author import apply_recipe
 from tools.worldbuilder import cli
 from tools.worldbuilder.analyze import analyze, records
 from tools.worldbuilder.ithilien import resize
+from tools.worldbuilder.relief import distance_to, sculpt
 
 
 def fixture():
@@ -41,6 +42,25 @@ def recipe(*operations):
 
 
 class WorldBuilderTests(unittest.TestCase):
+    def test_relief_distance_and_water_protection(self):
+        wet=np.zeros((9,9),dtype=bool);wet[4,4]=True
+        distance=distance_to(wet)
+        self.assertEqual(distance[4,4],0)
+        self.assertEqual(distance[4,8],4)
+        self.assertAlmostEqual(distance[6,6],2*2**.5)
+        m=resize(self.resize_fixture().encode(),160,180)
+        m.chunk('BlendTileData').data=m.chunk('BlendTileData').data.replace(string('GrassTest'),string('IthilienCliff03'))
+        water=struct.pack('<II',1,7)+string('Pond')+string('Water')
+        water+=struct.pack('<fB',.1,0)+string('bump')+string('sky')
+        water+=struct.pack('<I6fI',3,100,100,400,100,250,400,100)+string('shader')+string('depth')
+        m.chunk('StandingWaterAreas').data=water
+        objects=m.chunk('ObjectsList').data
+        result=sculpt(m)
+        self.assertTrue(result['water_samples_unchanged'])
+        self.assertGreater(result['maximum_height'],300)
+        self.assertEqual(m.chunk('ObjectsList').data,objects)
+        self.assertEqual(m.heightmap()['elevations'][22,22],2560)
+
     def resize_fixture(self):
         m = Map(fixture())
         for name in ('TriggerAreas','StandingWaveAreas','CameraAnimationList',

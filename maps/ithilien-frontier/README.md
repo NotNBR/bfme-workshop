@@ -15,7 +15,14 @@ remains available through its own shortcut.
 - 900 x 1,013 stored terrain samples, including a 30-tile border.
 - Two native player starts and large open areas around the bases.
 - Four named fords, twelve river strips, wooded hills and Gondorian ruins.
-- 5,872 placed records, including **4,129 added** trees, undergrowth, rocks and ruins.
+- Sculpted mountain walls, ridges, rolling hills, an eastern escarpment and a
+  raised western ruin terrace. Maximum terrain elevation is about 913 game units;
+  the median playable elevation rises from about 48 to 152.
+- River ribbons and submerged beds are unchanged. Main road surfaces and 700-unit
+  base circles keep their original elevations, with smooth shoulders into new hills.
+- Steep new faces receive native rock textures; slopes above 1.05 rise/run are
+  additionally flagged impassable. Native engine and object collision still apply.
+- 5,854 placed records, including **4,111 added** trees, undergrowth, rocks and ruins.
 - Scenery generation protects a 650-world-unit radius around base markers and
   135 units either side of native road segments. Collision/pathfinding also depends
   on the original terrain and object geometry; these spacing rules are not a full
@@ -62,7 +69,9 @@ initialize. Original game files and the openbfme2 reference checkout remain unto
 ## Verification and limits
 
 The native BFME2 smoke test loads the complete map, advances the simulation, reveals
-it, and photographs ruins, a river crossing, woodland and the strategic overview.
+it, and photographs the raised ruins, wooded hills, northern mountain pass and
+strategic overview. A held camera target prevents the previous repeated-river views;
+the report records the actual focus coordinates of every shot.
 Screenshots are read directly from the game's D3D9 render target because Windows'
 GDI capture returned a blank image. Readback is opt-in and inactive during normal
 play. Results and pictures are in `artifacts/ithilien-frontier/`.

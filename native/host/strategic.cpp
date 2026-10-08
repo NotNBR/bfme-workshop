@@ -168,7 +168,7 @@ static void strategicCamera(void *view) {
     if(!_finite(height) || height<=0) {filterReady=false;return;}
     renderHeight=height;bfxState.renderHeight=height;
     bool playing=inMatch();
-    if(playing && bfxPhoto.enabled) {
+    if(playing && bfxPhoto.enabled==1) {
         float s=(float)sin(bfxPhoto.elevation),c=(float)cos(bfxPhoto.elevation);
         Matrix photo={{{1,0,0,bfxPhoto.x},{0,s,-c,bfxPhoto.y-c*20000},
                        {0,c,s,bfxPhoto.z+s*20000}}};
@@ -180,7 +180,7 @@ static void strategicCamera(void *view) {
         return;
     }
     if(playing && !filterReady) advanceCamera(view);
-    const float blend=playing?tilt:0;
+    const float blend=(playing && !(bfxPhoto.enabled==2 && bfxPhoto.left<5000))?tilt:0;
     bfxState.height=requested; bfxState.blend=blend;
     if(!playing || !filterReady || blend<=0) {
         if(!playing) filterReady=false;
@@ -234,6 +234,16 @@ static void __fastcall cameraHook(void *view,void*) {
 static void showcaseCamera(void *view);
 static void __fastcall updateHook(void *view,void*) {
     bool tactical=view==field<void*>(base,0x9FEA3C);
+    if(tactical && inMatch() && bfxPhoto.enabled==2) {
+        typedef float (__fastcall *PhotoGroundFn)(void*,void*,float,float,V3*);
+        typedef void (__fastcall *PhotoPositionFn)(void*,void*,const V3*);
+        typedef void (__fastcall *PhotoHeightFn)(void*,void*,float);
+        V3 focus={bfxPhoto.x,bfxPhoto.y,bfxPhoto.z};
+        void *terrain=field<void*>(base,0x9FEC50);
+        if(terrain)focus.z=((PhotoGroundFn)field<U32*>(terrain,0)[6])(terrain,0,focus.x,focus.y,0);
+        address<PhotoPositionFn>(0x8D55D)(view,0,&focus);
+        address<PhotoHeightFn>(0x8D2B8)(view,0,bfxPhoto.left);
+    }
     if(tactical) traceCamera(view,0);
     if(tactical && inMatch()) {showcaseCamera(view);advanceCamera(view);}
     U32 calls=bfxState.cameraCalls;
