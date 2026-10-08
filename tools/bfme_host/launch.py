@@ -30,8 +30,12 @@ def main():
     parser.add_argument('--map')
     parser.add_argument('--map-check',action='store_true',help='Validate Ithilien Frontier with native render-target snapshots')
     parser.add_argument('--frontier',action='store_true',help='Play the revealed Ithilien Frontier map as Mordor versus Elves')
+    parser.add_argument('--map-photo',action='store_true',help='Render a tiled 8000-pixel map portrait')
     parser.add_argument('--battle', choices=['orcs-elves'], help='Start a prepared Mordor-versus-Elves battalion battle')
     args = parser.parse_args()
+    if args.map_photo:
+        args.test=args.strategic=True
+        args.map=r'maps\map mp bfmexbar ithilien frontier.map'
     if args.map_check:
         args.test=args.strategic=True
         args.map=r'maps\map mp bfmexbar ithilien frontier.map'
@@ -79,6 +83,9 @@ def main():
     sys.dont_write_bytecode = True
     sys.path.insert(0, str(reference))
     import game_smoke
+    if args.map_photo:
+        import map_photo
+        map_photo.register(game_smoke)
     if args.map_check:
         import map_check
         map_check.register(game_smoke)
@@ -134,6 +141,7 @@ def main():
             '--seconds', '55' if args.battle else '30', '--min-frames', '100', '--timeout', '180',
             '--guard', config['game'],
         ])
+        if args.map_photo:return map_photo.validate(output)
         if args.map_check:return map_check.validate(output)
         if args.zoom_check and status == 0:
             return zoom_check.validate(output)

@@ -74,3 +74,18 @@ grids at 1,024 samples per axis as an experiment bound, not a discovered engine 
 
 Map data and copied retail previews stay in ignored runtime/artifact folders. Source
 tooling and recipes are in Git; the original BFME2 assets are not redistributed.
+
+## High-resolution map photograph
+
+```powershell
+.\.venv\Scripts\python.exe tools/bfme_host/launch.py --window --map-photo
+```
+
+This starts a dedicated native capture session and exports an 8,000 x 8,000 PNG
+and JPEG under `artifacts/ithilien-frontier/photo/`. The camera is tilted 20 degrees
+from vertical. Sixty orthographic tiles share a fixed camera; only the view plane
+moves. Each frame contributes its upper 720 rows, excluding the native HUD, and
+pixels are assembled without upscaling. Trees, ruins, textures and water are
+rendered by BFME2. The simulation and water animation continue during capture,
+so this is a landscape portrait rather than one simultaneous gameplay frame.
+Photo mode is opt-in and does not alter the normal gameplay camera.

@@ -25,6 +25,9 @@ struct State {
     float renderHeight, maxBlendStep, nativeBarWidth, scaledBarWidth;
 };
 extern "C" __declspec(dllexport) State bfxState = {2};
+// Opt-in map photography. Parallel tiles share one camera, avoiding stitch parallax.
+struct PhotoState { U32 enabled; float x,y,z,elevation,left,bottom,right,top; };
+extern "C" __declspec(dllexport) PhotoState bfxPhoto = {0};
 struct SymbolState {
     U32 samples, interpolatedPositions, betweenLogicMoves, logicMoves;
     U32 selectedIcons, enemyIcons, peakSelectedIcons, peakEnemyIcons;
@@ -165,6 +168,17 @@ static void strategicCamera(void *view) {
     if(!_finite(height) || height<=0) {filterReady=false;return;}
     renderHeight=height;bfxState.renderHeight=height;
     bool playing=inMatch();
+    if(playing && bfxPhoto.enabled) {
+        float s=(float)sin(bfxPhoto.elevation),c=(float)cos(bfxPhoto.elevation);
+        Matrix photo={{{1,0,0,bfxPhoto.x},{0,s,-c,bfxPhoto.y-c*20000},
+                       {0,c,s,bfxPhoto.z+s*20000}}};
+        V2 lo={bfxPhoto.left,bfxPhoto.bottom},hi={bfxPhoto.right,bfxPhoto.top};
+        address<PlaneFn>(0x134020)(cam,0,&lo,&hi);
+        field<U32>(cam,0xC4)=1;field<float>(cam,0xF0)=50000;
+        address<TransformFn>(0x13B790)(cam,0,&photo);
+        field<U8>(cam,0xFC)=0;
+        return;
+    }
     if(playing && !filterReady) advanceCamera(view);
     const float blend=playing?tilt:0;
     bfxState.height=requested; bfxState.blend=blend;
@@ -227,7 +241,7 @@ static void __fastcall updateHook(void *view,void*) {
     // Native updates can skip setCameraTransform when no input has changed.
     // Continue easing on those frames, before reflections/culling/UI projection.
     if(tactical && filterReady && calls==bfxState.cameraCalls &&
-       (tiltVelocity!=0 || fabs(tilt-bfxState.blend)>.00001f ||
+       (bfxPhoto.enabled || tiltVelocity!=0 || fabs(tilt-bfxState.blend)>.00001f ||
         (tilt>=1 && bfxState.projection!=1) || (tilt<=0 && bfxState.projection!=0)))
         strategicCamera(view);
     if(tactical) {bfxState.frameUpdates++;traceCamera(view,2);}
@@ -456,7 +470,7 @@ static void renderSymbols() {
 }
 #include "capture.inc"
 static void __cdecl endHook(bool flip) {
-    __try {traceCamera(activeView,3);renderSymbols();captureFrame();}
+    __try {traceCamera(activeView,3);if(!bfxPhoto.enabled)renderSymbols();captureFrame();}
     __except(EXCEPTION_EXECUTE_HANDLER) {bfxState.faults++;bfxState.lastError=GetExceptionCode();}
     ((EndFn)endOriginal)(flip);
 }
