@@ -40,6 +40,8 @@ Four-view native verification:
 
 Use `--map-photo` instead of `--map-check` for the native 8K portrait. It tiles BFME2's renderer; the simulation continues between tiles.
 
+Completed portrait: `artifacts/ashen-march/photo/The-Ashen-March-8000.jpg` (with a lossless PNG alongside it). Close views are in `artifacts/ashen-march/polish/`.
+
 ## Verification boundaries
 
 The finished build contains 1,279 object records and nine terrain materials. Its

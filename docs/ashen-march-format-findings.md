@@ -96,3 +96,7 @@ Subsequent checkpoint writes preserve a changed previous map in a hash-named `hi
 - Tested map SHA-256: `cc5803e6917baa36d0e681a9ce922ad42a83c3301835fcca59e24dc8bd42797a`.
 
 The evidence report is `artifacts/ashen-march/polish/native-validation.json`. These checks establish native loading/rendering and authoring consistency, not full horde pathfinding or multiplayer balance.
+
+The final native portrait also completed: 60 render-target tiles, 8,000 × 8,000 output pixels, 70-degree camera elevation (20 degrees off vertical), zero extension faults and no upscaling. `artifacts/ashen-march/photo/capture.json` records the capture. The JPEG is approximately 23.6 MB and the lossless PNG 78.8 MB. All tiles use the same fixed projection; the simulation advances between tiles, so this is a landscape portrait rather than a synchronized battle photograph.
+
+The map was then launched interactively with Mordor as the human faction, Elves as the AI, revealed terrain and strategic controls. This verifies the new launch preset independently of the screenshot-only runs.
