@@ -16,7 +16,7 @@ def main():
     env['LIB']=os.pathsep.join(map(str,[vc/'lib',vc/'PlatformSDK/Lib']))
     command=[str(vc/'bin/cl.exe'),'/nologo','/O2','/MD','/LD','/EHsc',
         str(ROOT/'projects/strategic/native/strategic.cpp'),'/Fe'+str(output/'bfmexbar-strategic.dll'),
-        '/Fo'+str(output/'strategic.obj'),'/link','/MACHINE:X86','kernel32.lib']
+        '/Fo'+str(output/'strategic.obj'),'/link','/MACHINE:X86','kernel32.lib','user32.lib']
     subprocess.run(command,env=env,cwd=output,check=True)
     print(output/'bfmexbar-strategic.dll')
 

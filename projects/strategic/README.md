@@ -5,6 +5,10 @@ symbol rendering and hook installation. `native/symbols.inc` contains the symbol
 geometry. Shared capture and scenario features are included from the repository's
 `src/native/` directory and keep their existing exported ABI.
 
+Mouse-wheel zoom keeps the terrain beneath the cursor in place, including the
+transition to the overhead view. `native/cursor_zoom.inc` handles this anchoring;
+HUD input and scripted photo/trailer cameras keep their own behavior.
+
 Build with `python scripts/bfx.py mod build`. The output remains
 `runtime/bfme-host/extension/bfmexbar-strategic.dll`.
 

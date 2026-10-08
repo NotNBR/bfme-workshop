@@ -42,7 +42,13 @@ def read_state(game):
     if not address:return None
     data=game.read(address,104)
     if not data or len(data)!=104:return None
-    return dict(zip(STATE_FIELDS,struct.unpack('<12I4f2I2f2I4f',data)))
+    state=dict(zip(STATE_FIELDS,struct.unpack('<12I4f2I2f2I4f',data)))
+    cursor=game.res.get('cursor_zoom_address')
+    if cursor:
+        values=struct.unpack('<4I2i5f',game.read(cursor,44))
+        state['cursorZoom']=dict(zip(['active','events','corrections','rejected',
+            'pixelX','pixelY','worldX','worldY','worldZ','pixelError','maxPixelError'],values))
+    return state
 
 
 def register(smoke, dll, trace=False, battle=False, showcase=False):
@@ -50,6 +56,7 @@ def register(smoke, dll, trace=False, battle=False, showcase=False):
     dll=Path(dll).resolve()
     pe=pefile.PE(str(dll))
     state_rva=next(e.address for e in pe.DIRECTORY_ENTRY_EXPORT.symbols if e.name==b'bfxState')
+    cursor_rva=next((e.address for e in pe.DIRECTORY_ENTRY_EXPORT.symbols if e.name==b'bfxCursorZoom'),None)
     probe_rva=next(e.address for e in pe.DIRECTORY_ENTRY_EXPORT.symbols if e.name==b'bfxProbe')
     trace_rva=next(e.address for e in pe.DIRECTORY_ENTRY_EXPORT.symbols if e.name==b'bfxTrace')
     symbols_rva=next(e.address for e in pe.DIRECTORY_ENTRY_EXPORT.symbols if e.name==b'bfxSymbols')
@@ -82,6 +89,7 @@ def register(smoke, dll, trace=False, battle=False, showcase=False):
                 module=results[0]
                 if not module:raise RuntimeError('BFME2 could not load the strategic extension')
                 game.res['strategic_state_address']=module+state_rva
+                if cursor_rva is not None:game.res['cursor_zoom_address']=module+cursor_rva
                 game.res['strategic_probe_address']=module+probe_rva
                 game.res['strategic_trace_address']=module+trace_rva
                 game.res['symbol_state_address']=module+symbols_rva

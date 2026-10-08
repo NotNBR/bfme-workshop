@@ -1,6 +1,8 @@
 // GPL-3.0-only. BFME2 1.06 integration; addresses checked against openbfme2.
 // This DLL is loaded by our version-guarded launcher into the isolated game.
 #define WIN32_LEAN_AND_MEAN
+#define _WIN32_WINNT 0x0501
+#define WINVER 0x0501
 #include <windows.h>
 #include <math.h>
 #include <float.h>
@@ -48,6 +50,7 @@ static LARGE_INTEGER traceStart;
 static U8 *base;
 static void *cameraOriginal, *pickOriginal, *endOriginal;
 static void *updateOriginal, *healthOriginal;
+static void *mouseOriginal;
 static void *activeView;
 static bool wasOrtho;
 static bool filterReady;
@@ -234,8 +237,10 @@ static void __fastcall cameraHook(void *view,void*) {
 }
 static void showcaseCamera(void *view);
 static void movieCamera(void *view);
+static void finishCursorZoom(void *view,const V3 &previousFocus);
 static void __fastcall updateHook(void *view,void*) {
     bool tactical=view==field<void*>(base,0x9FEA3C);
+    V3 previousFocus=field<V3>(view,0x0C);
     if(tactical && inMatch() && bfxPhoto.enabled==2) {
         typedef float (__fastcall *PhotoGroundFn)(void*,void*,float,float,V3*);
         typedef void (__fastcall *PhotoPositionFn)(void*,void*,const V3*);
@@ -256,7 +261,7 @@ static void __fastcall updateHook(void *view,void*) {
        (bfxPhoto.enabled || tiltVelocity!=0 || fabs(tilt-bfxState.blend)>.00001f ||
         (tilt>=1 && bfxState.projection!=1) || (tilt<=0 && bfxState.projection!=0)))
         strategicCamera(view);
-    if(tactical) {bfxState.frameUpdates++;traceCamera(view,2);}
+    if(tactical) {finishCursorZoom(view,previousFocus);bfxState.frameUpdates++;traceCamera(view,2);}
 }
 static void scaleHealth(void *drawable) {
     if(!inMatch() || !filterReady || !activeView || renderHeight<=0) return;
@@ -299,7 +304,7 @@ static void __fastcall healthHook(void *client,void*,int kind,void *drawable) {
 }
 static void __fastcall pickHook(void *view,void*,const I2 *screen,V3 *start,V3 *end) {
     void *cam=field<void*>(view,0x104);
-    if(!cam || field<U32>(cam,0xC4)!=1) {
+    if(!cam || (field<U32>(cam,0xC4)!=1 && view!=field<void*>(base,0x9FEA3C))) {
         ((PickFn)pickOriginal)(view,0,screen,start,end);return;
     }
     U32 *vt=field<U32*>(view,0);
@@ -311,6 +316,17 @@ static void __fastcall pickHook(void *view,void*,const I2 *screen,V3 *start,V3 *
     Matrix &m=field<Matrix>(cam,0x18);
     float nearZ=field<float>(cam,0xEC),farZ=field<float>(cam,0xF0);
     float *a=&start->x,*b=&end->x;
+    if(field<U32>(cam,0xC4)!=1) {
+        // Build the direction before adding the world-space camera position.
+        // Native Un_Project subtracts two large, nearly identical positions;
+        // during the long perspective transition this loses several pixels.
+        float scale=farZ/(float)sqrt(x*x+y*y+1);
+        for(int i=0;i<3;i++) {
+            a[i]=m.m[i][3];
+            b[i]=a[i]+(m.m[i][0]*x+m.m[i][1]*y-m.m[i][2])*scale;
+        }
+        bfxState.pickCalls++;return;
+    }
     for(int i=0;i<3;i++) {
         a[i]=m.m[i][3]+m.m[i][0]*x+m.m[i][1]*y-m.m[i][2]*nearZ;
         b[i]=m.m[i][3]+m.m[i][0]*x+m.m[i][1]*y-m.m[i][2]*farZ;
@@ -529,6 +545,7 @@ static void undoHook(U32 rva,void *trampoline,int length) {
 #include "../../../src/native/scenarios/orcs_elves.inc"
 #include "../../../src/native/scenarios/kingdoms.inc"
 #include "../../../src/native/capture/showcase.inc"
+#include "cursor_zoom.inc"
 
 BOOL WINAPI DllMain(HINSTANCE instance,DWORD reason,LPVOID) {
     if(reason!=DLL_PROCESS_ATTACH) return TRUE;
@@ -542,20 +559,24 @@ BOOL WINAPI DllMain(HINSTANCE instance,DWORD reason,LPVOID) {
     const U8 updateBytes[]={0x81,0xc1,0xb4,0,0,0};
     const U8 healthBytes[]={0x8d,0x44,0x24,0x08,0x50};
     const U8 pipBytes[]={0xff,0x90,0x24,0x01,0,0};
+    const U8 mouseBytes[]={0x8b,0x81,0x10,0x60,0,0};
     if(base!=(U8*)0x400000||memcmp(base+0x8BE6B,cameraBytes,5)||
        memcmp(base+0x89658,pickBytes,6)||memcmp(base+0x122BE0,endBytes,6)||
-       memcmp(base+0x85B36,updateBytes,6)||memcmp(base+0x239FCC,healthBytes,5)||memcmp(base+0x277E23,pipBytes,6)) return FALSE;
+       memcmp(base+0x85B36,updateBytes,6)||memcmp(base+0x239FCC,healthBytes,5)||memcmp(base+0x277E23,pipBytes,6)||
+       memcmp(base+0x41A10,mouseBytes,6)) return FALSE;
     cameraOriginal=hook(0x8BE6B,cameraHook,cameraBytes,5);
     pickOriginal=hook(0x89658,pickHook,pickBytes,6);
     endOriginal=hook(0x122BE0,endHook,endBytes,6);
     updateOriginal=hook(0x85B36,updateHook,updateBytes,6);
     healthOriginal=hook(0x239FCC,healthHook,healthBytes,5);
-    if(!cameraOriginal||!pickOriginal||!endOriginal||!updateOriginal||!healthOriginal) {
+    mouseOriginal=hook(0x41A10,mouseHook,mouseBytes,6);
+    if(!cameraOriginal||!pickOriginal||!endOriginal||!updateOriginal||!healthOriginal||!mouseOriginal) {
         undoHook(0x8BE6B,cameraOriginal,5);
         undoHook(0x89658,pickOriginal,6);
         undoHook(0x122BE0,endOriginal,6);
         undoHook(0x85B36,updateOriginal,6);
         undoHook(0x239FCC,healthOriginal,5);
+        undoHook(0x41A10,mouseOriginal,6);
         return FALSE;
     }
     // Replace only Drawable's veterancy zoom getter, preserving global zoom.
@@ -564,7 +585,7 @@ BOOL WINAPI DllMain(HINSTANCE instance,DWORD reason,LPVOID) {
     if(!VirtualProtect(pipCall,6,PAGE_EXECUTE_READWRITE,&pipOld)) {
         undoHook(0x8BE6B,cameraOriginal,5);undoHook(0x89658,pickOriginal,6);
         undoHook(0x122BE0,endOriginal,6);undoHook(0x85B36,updateOriginal,6);
-        undoHook(0x239FCC,healthOriginal,5);return FALSE;
+        undoHook(0x239FCC,healthOriginal,5);undoHook(0x41A10,mouseOriginal,6);return FALSE;
     }
     pipCall[0]=0xe8;*(U32*)(pipCall+1)=(U32)veterancyZoom-(U32)(pipCall+5);pipCall[5]=0x90;
     VirtualProtect(pipCall,6,pipOld,&pipOld);FlushInstructionCache(GetCurrentProcess(),pipCall,6);
