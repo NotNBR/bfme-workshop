@@ -4,6 +4,10 @@ A mod and creative toolkit for **The Battle for Middle-earth II**. It adds a
 Supreme Commander-style strategic view to the original game, alongside tools for
 building maps, staging large battles and recording trailers.
 
+Built with help from [openbfme2 (Open-BFME-2)](https://github.com/Open-BFME/Open-BFME-2),
+whose launch helpers, compatibility code and reverse-engineering work underpin
+the native BFME2 integration.
+
 ## What's inside
 
 - **[Strategic mod](projects/strategic/README.md)** — extended zoom, an overhead
