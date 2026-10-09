@@ -66,6 +66,7 @@ def register(smoke, dll, trace=False, battle=False, showcase=False):
     capture_rva=next((e.address for e in pe.DIRECTORY_ENTRY_EXPORT.symbols if e.name==b'bfxCapture'),None)
     photo_rva=next((e.address for e in pe.DIRECTORY_ENTRY_EXPORT.symbols if e.name==b'bfxPhoto'),None)
     types_rva=next(e.address for e in pe.DIRECTORY_ENTRY_EXPORT.symbols if e.name==b'bfxSymbolTypes')
+    overlay_rva=next((e.address for e in pe.DIRECTORY_ENTRY_EXPORT.symbols if e.name==b'bfxOverlay'),None)
     battle_exports={key:next(e.address for e in pe.DIRECTORY_ENTRY_EXPORT.symbols if e.name==name)
                     for key,name in [('state',b'bfxBattleState'),('start',b'bfxStartBattle'),
                                      ('orders',b'bfxBattleOrders'),('probe',b'bfxBattleProbe')]}
@@ -95,6 +96,7 @@ def register(smoke, dll, trace=False, battle=False, showcase=False):
                 game.res['symbol_state_address']=module+symbols_rva
                 game.res['reserve_debug_address']=module+reserves_rva
                 game.res['symbol_types_address']=module+types_rva
+                if overlay_rva is not None:game.res['overlay_address']=module+overlay_rva
                 game.res['pip_scale_address']=module+pips_rva
                 if capture_rva is not None:game.res['capture_address']=module+capture_rva
                 if photo_rva is not None:game.res['photo_address']=module+photo_rva
@@ -117,6 +119,10 @@ def register(smoke, dll, trace=False, battle=False, showcase=False):
                     names=['building','infantry','archer','pike','cavalry','siege','monster','hero','builder','air']
                     state['symbolTypes']=dict(zip(names,types[:10]))
                     state['peakSymbolTypes']=dict(zip(names,types[10:]))
+                    if game.res.get('overlay_address'):
+                        overlay=struct.unpack('<15I',game.read(game.res['overlay_address'],60))
+                        state['overlay']=dict(zip(['version','candidates','groups','merged','walls','dropped','vertices',
+                            'peakMerged','peakGroups','fortress','production','economy','defense','objective','gates'],overlay))
                     symbols=game.read(game.res['symbol_state_address'],32)
                     if symbols and len(symbols)==32:
                         state['symbols']=dict(zip(['samples','interpolatedPositions','betweenLogicMoves','logicMoves',

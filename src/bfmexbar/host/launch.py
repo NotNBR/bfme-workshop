@@ -26,6 +26,7 @@ def main():
     parser.add_argument('--zoom-check', action='store_true')
     parser.add_argument('--strategic', action='store_true')
     parser.add_argument('--strategic-check', action='store_true')
+    parser.add_argument('--symbols-check', action='store_true', help='Capture and validate counted symbols in the prepared Eight Kingdoms battle')
     parser.add_argument('--camera-trace', action='store_true', help='Record native camera properties per frame to CSV')
     parser.add_argument('--vanilla', action='store_true', help='Diagnostic run without the bfmeXbar mod')
     parser.add_argument('--dry-run', action='store_true')
@@ -40,10 +41,14 @@ def main():
     parser.add_argument('--map-photo',action='store_true',help='Render a tiled 8000-pixel map portrait')
     parser.add_argument('--battle', choices=['orcs-elves'], help='Start a prepared Mordor-versus-Elves battalion battle')
     args = parser.parse_args()
+    if args.symbols_check and any((args.strategic_check,args.zoom_check,args.script_check,args.map_check,
+                                  args.map_photo,args.kingdoms_trailer,args.showcase,args.menu,args.vanilla,args.map_tour)):
+        parser.error('--symbols-check is a standalone prepared-battle regression')
     if args.script_check:
         if args.battle or args.frontier or args.ashen or args.eight_kingdoms or args.kingdoms_battle or args.kingdoms_trailer or args.menu or args.vanilla or args.map_check or args.map_photo:
             parser.error('--script-check requires a standalone map test')
         args.test = True
+    if args.symbols_check:args.kingdoms_battle=args.test=True
     if args.kingdoms_trailer:args.kingdoms_battle=args.test=True
     if args.kingdoms_battle:args.eight_kingdoms=True
     if args.eight_kingdoms:
@@ -123,6 +128,9 @@ def main():
     if args.strategic_check:
         import bfmexbar.strategic.check as strategic_check
         strategic_check.register(game_smoke)
+    if args.symbols_check:
+        import bfmexbar.strategic.symbol_check as symbol_check
+        symbol_check.register(game_smoke)
     if args.zoom_check:
         import bfmexbar.strategic.zoom_check as zoom_check
         zoom_check.register(game_smoke)
@@ -180,6 +188,7 @@ def main():
             '--guard', config['game'],
         ])
         if args.kingdoms_trailer:return kingdoms_battle.validate(output)
+        if args.symbols_check:return symbol_check.validate(output)
         if args.script_check:return script_check.validate(output, args.script_check, script_source)
         if args.map_photo:return map_photo.validate(output)
         if args.map_check:return map_check.validate(output)

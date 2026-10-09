@@ -1,13 +1,27 @@
 // BFME2 KindOf indices verified in the retail table at VA 0xDBBE18 and
 // openbfme2/Code/GameEngine/Source/GameLogic/ScriptEngine/KindOfGetNameFromSingleBit.cpp.
-enum SymbolKind { BUILDING, INFANTRY, ARCHER, PIKE, CAVALRY, SIEGE, MONSTER, HERO, BUILDER, AIR, SYMBOL_KINDS };
+// Keep the first ten telemetry slots ABI-compatible with existing capture tools.
+enum SymbolKind { BUILDING, INFANTRY, ARCHER, PIKE, CAVALRY, SIEGE, MONSTER, HERO, BUILDER, AIR, SYMBOL_KINDS,
+    FORTRESS, PRODUCTION, ECONOMY, DEFENSE, OBJECTIVE, GATE, WALL };
+static bool buildingKind(SymbolKind kind) { return kind==BUILDING||kind>=FORTRESS; }
 struct SymbolTypes { U32 current[SYMBOL_KINDS],peak[SYMBOL_KINDS]; };
 extern "C" __declspec(dllexport) SymbolTypes bfxSymbolTypes = {0};
 static bool hasKind(void *tmpl,int bit) {
     return (field<U8>(tmpl,0x108+bit/8)&(1<<(bit%8)))!=0;
 }
+static bool emptyExpansionPad(void *tmpl) { return hasKind(tmpl,216)&&hasKind(tmpl,54); }
 static SymbolKind symbolKind(void *obj,void *tmpl) {
-    if(hasKind(tmpl,7))return BUILDING;
+    if(hasKind(tmpl,7)) {
+        if(hasKind(tmpl,203)||hasKind(tmpl,137))return GATE;
+        // CASTLE_KEEP alone also appears on Gondor farms and civilian buildings.
+        if(hasKind(tmpl,17)||hasKind(tmpl,18)||(hasKind(tmpl,28)&&hasKind(tmpl,177)))return FORTRESS;
+        if(hasKind(tmpl,64)||(hasKind(tmpl,150)&&hasKind(tmpl,3)))return DEFENSE;
+        if(hasKind(tmpl,189)||hasKind(tmpl,61)||hasKind(tmpl,156))return WALL;
+        if(hasKind(tmpl,196)||hasKind(tmpl,135))return ECONOMY;
+        if(hasKind(tmpl,49))return OBJECTIVE;
+        if(hasKind(tmpl,63)||hasKind(tmpl,69))return PRODUCTION;
+        return BUILDING;
+    }
     // Banner bearers share their battalion's tactical role.
     void *parent=field<void*>(obj,0x274);
     if(parent) {

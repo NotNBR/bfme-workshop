@@ -71,8 +71,7 @@ def main(argv=None):
         return invoke('bfmexbar.host.'+{'build':'build','prepare':'prepare','prepare-worktree':'prepare_worktree'}[args.action],rest)
     if args.command == 'mod':
         if args.action == 'build':
-            if rest: p.error('mod build takes no extra arguments')
-            return invoke('bfmexbar.strategic.build',[])
+            return invoke('bfmexbar.strategic.build',rest)
         return launch(['--strategic-check' if args.action == 'check' else '--zoom-check',*rest])
     if args.command == 'map':
         if args.action != 'build':

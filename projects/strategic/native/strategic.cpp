@@ -7,6 +7,7 @@
 #include <math.h>
 #include <float.h>
 #include <string.h>
+#include <stdlib.h>
 
 #include "../../../src/native/common/types.inc"
 struct State {
@@ -30,10 +31,9 @@ struct SymbolState {
     U32 selectedIcons, enemyIcons, peakSelectedIcons, peakEnemyIcons;
 };
 extern "C" __declspec(dllexport) SymbolState bfxSymbols = {0};
-// Opt-in prepared-battle policy: keep one visible marker per battalion.
+// Default policy: keep one visible marker per battalion in every match.
 struct BattalionSymbols { U32 enabled,collapsed,peakCollapsed; };
-extern "C" __declspec(dllexport) BattalionSymbols bfxBattalionSymbols={0};
-static U32 symbolGroups[2048];
+extern "C" __declspec(dllexport) BattalionSymbols bfxBattalionSymbols={1};
 static U32 symbolObject, symbolLogicFrame;
 static V3 symbolPosition;
 struct CameraSample {
@@ -56,7 +56,8 @@ static bool wasOrtho;
 static bool filterReady;
 static float renderHeight, tilt, tiltVelocity;
 static LARGE_INTEGER lastCameraTime, timerFrequency;
-static Vertex vertices[65532];
+static const U32 SYMBOL_VERTEX_CAPACITY=262140;
+static Vertex vertices[SYMBOL_VERTEX_CAPACITY];
 static U32 vertexCount;
 template<class T> T &field(void *p, U32 offset) { return *(T*)((U8*)p+offset); }
 template<class T> T address(U32 rva) { return (T)(base+rva); }
@@ -362,7 +363,7 @@ extern "C" __declspec(dllexport) void bfxProbe() {
     bfxState.probeCalls++;
 }
 static void tri(float ax,float ay,float bx,float by,float cx,float cy,U32 color) {
-    if(vertexCount+3>65532) return;
+    if(vertexCount+3>SYMBOL_VERTEX_CAPACITY) return;
     Vertex v[3]={{ax,ay,0,1,color},{bx,by,0,1,color},{cx,cy,0,1,color}};
     memcpy(vertices+vertexCount,v,sizeof(v));vertexCount+=3;
 }
@@ -374,6 +375,7 @@ static void diamond(float x,float y,float r,U32 color) {
 }
 static U32 alpha(U32 color,float a) { return (color&0xffffff)|((U32)(255*a)<<24); }
 #include "symbols.inc"
+#include "symbol_overlay.inc"
 static bool symbolSelected(void *object) {
     // BFME selects the horde drawable; its individual soldiers are contained
     // objects. Follow the native containment chain so the whole battalion lights.
@@ -390,7 +392,7 @@ typedef HRESULT (__stdcall *Com2)(void*,U32,U32);
 typedef HRESULT (__stdcall *ComPointer)(void*,void*);
 typedef HRESULT (__stdcall *ComStage)(void*,U32,U32,U32);
 static void renderSymbols() {
-    bfxBattalionSymbols.collapsed=0;U32 groupCount=0;
+    bfxBattalionSymbols.collapsed=0;beginOverlay();
     bfxState.icons=bfxState.buildings=bfxState.units=bfxState.hiddenSkipped=0;
     bfxSymbols.selectedIcons=bfxSymbols.enemyIcons=0;
     memset(bfxSymbolTypes.current,0,sizeof(bfxSymbolTypes.current));
@@ -415,6 +417,9 @@ static void renderSymbols() {
     for(int count=0;obj&&count<20000;obj=field<void*>(obj,0x8C),count++) {
         void *tmpl=field<void*>(obj,4),*drawable=field<void*>(obj,0x84);
         if(!tmpl||!drawable||(field<U8>(obj,0x438)&1)) continue;
+        // Empty fortress build sockets otherwise obscure the actual fortress.
+        // Keep a socket's marker while it is selected for construction.
+        if(emptyExpansionPad(tmpl)&&!symbolSelected(obj))continue;
         void *owner=address<OwnerFn>(0x28AFA9)(obj,0);
         if(!owner) continue;
         if(!address<SelectableFn>(0x28D7FD)(obj,0)) continue;
@@ -434,9 +439,9 @@ static void renderSymbols() {
         }
         U32 groupId=field<U32>(symbolRoot,0x74);
         if(bfxBattalionSymbols.enabled) {
-            bool duplicate=false;
-            for(U32 n=0;n<groupCount;n++)if(symbolGroups[n]==groupId){duplicate=true;break;}
-            if(duplicate){bfxBattalionSymbols.collapsed++;continue;}
+            if(!groupId)continue;
+            int slot=symbolSlot(seenSymbols,groupId);
+            if(seenSymbols[slot]){bfxBattalionSymbols.collapsed++;continue;}
         }
         // Drawable::getTransform is the same cached, client-frame interpolation
         // used by Drawable::draw. Object +0x38 only advances on simulation ticks.
@@ -465,24 +470,29 @@ static void renderSymbols() {
         if(projectedStatus!=0) continue;
         float x=viewport.x+(projected.x+1)*viewport.width*.5f;
         float y=viewport.y+(1-projected.y)*viewport.height*.5f;
-        if(x<12||y<12||x>viewport.width-12||y>viewport.height-15) continue;
+        if(x<viewport.x+24||y<viewport.y+24||x>viewport.x+viewport.width-24||y>viewport.y+viewport.height-42) continue;
         // Native palantir/control bar remains on top conceptually.
         // BFME scales its palantir/control bar with the viewport dimensions.
-        if(y>viewport.y+viewport.height*(1-260.0f/768) &&
+        if(y+32>viewport.y+viewport.height*(1-260.0f/768) &&
            x<viewport.x+viewport.width*(400.0f/1024)) continue;
         SymbolKind kind=symbolKind(obj,tmpl);
         bool selected=symbolSelected(obj);
         bool enemy=owner!=local && address<RelationshipFn>(0x2AD0C6)(local,0,field<void*>(obj,0x304))==0;
-        U32 color=alpha(enemy?0xF04444:address<ColorFn>(0x28B026)(obj,0),fade);
-        U32 white=alpha(0xF3E5BC,fade),dark=alpha(0x071018,fade);
-        U32 border=alpha(selected?0xFFE45C:0xD0C6AD,fade);
-        if(selected)bfxSymbols.selectedIcons++;
-        if(enemy)bfxSymbols.enemyIcons++;
-        tacticalSymbol(kind,x,y,selected,color,border,white,dark);
-        if(bfxBattalionSymbols.enabled&&groupCount<2048)symbolGroups[groupCount++]=groupId;
-        if(kind==BUILDING)bfxState.buildings++;else bfxState.units++;
-        bfxState.icons++;
+        if(sampleCount>=MAX_SYMBOLS){bfxOverlay.dropped++;continue;}
+        SymbolSample &s=symbolSamples[sampleCount++];memset(&s,0,sizeof(s));
+        s.id=groupId;s.owner=(U32)owner;s.color=address<ColorFn>(0x28B026)(obj,0)&0xffffff;
+        s.kind=kind;s.selected=selected;s.enemy=enemy;s.x=x;s.y=y;s.wx=position.x;s.wy=position.y;
+        // A conservative local-Y stroke per visible segment. Never infer links
+        // through missing, destroyed or fogged wall objects.
+        if(kind==WALL) {
+            V3 endpoint=position,out;endpoint.x+=transform->m[0][1]*20;endpoint.y+=transform->m[1][1]*20;
+            if(address<ProjectFn>(0x135390)(cam,0,&out,&endpoint)==0) {
+                s.wallX=(out.x-projected.x)*viewport.width*.5f;s.wallY=-(out.y-projected.y)*viewport.height*.5f;
+            }
+        }
+        if(bfxBattalionSymbols.enabled)seenSymbols[symbolSlot(seenSymbols,groupId)]=groupId;
     }
+    drawOverlay(fade,renderHeight,viewport);
     if(!trackedSymbol) symbolObject=0;
     if(bfxBattalionSymbols.collapsed>bfxBattalionSymbols.peakCollapsed)bfxBattalionSymbols.peakCollapsed=bfxBattalionSymbols.collapsed;
     for(int kindIndex=0;kindIndex<SYMBOL_KINDS;kindIndex++)

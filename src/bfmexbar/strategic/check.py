@@ -59,8 +59,11 @@ def register(smoke):
             result=base(game)
             frame,current_mode=game.logic()
             if current_mode!=mode or frame is None:return result
+            # Scenario staging may already have queued a call at this breakpoint.
+            # Re-arming it would save INT3 as the original instruction byte.
+            if game.va('GameEngine::update') in game.bps:return result
             if frame>=20 and not selected:
-                game.arm('GameEngine::update',select_fortress);selected=True
+                game.arm('GameEngine::update',select_fortress);selected=True;return result
             if stage==0 and frame>=15:
                 height(game,300);stage=1
             elif stage==1 and frame>=40:
