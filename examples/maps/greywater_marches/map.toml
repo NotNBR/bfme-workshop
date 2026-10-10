@@ -1,0 +1,9 @@
+schema = 1
+id = "greywater-marches"
+native_name = "map mp bfmexbar greywater marches"
+title = "The Greywater Marches"
+width = 1350
+height = 900
+border = 30
+seed = 101026
+scale = 1.5

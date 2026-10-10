@@ -1,0 +1,73 @@
+{
+  "maps": [
+    {
+      "name": "Fords of Isen II",
+      "source": "original",
+      "entry": "map mp fords of isen ii"
+    },
+    {
+      "name": "Evendim",
+      "source": "original",
+      "entry": "map mp evendim"
+    },
+    {
+      "name": "Tournament Hills",
+      "source": "original",
+      "entry": "map mp tournament hills"
+    },
+    {
+      "name": "Harlindon",
+      "source": "original",
+      "entry": "map wor harlindon"
+    },
+    {
+      "name": "Buckland",
+      "source": "original",
+      "entry": "map wor buckland"
+    },
+    {
+      "name": "Ithilien",
+      "source": "original",
+      "entry": "map wor ithilien"
+    },
+    {
+      "name": "Shire",
+      "source": "original",
+      "entry": "map wor shire"
+    },
+    {
+      "name": "Greywater Marches",
+      "source": "ours",
+      "file": "../../local/runtime/bfme-host/mod/maps/map mp bfmexbar greywater marches/map mp bfmexbar greywater marches.map"
+    },
+    {
+      "name": "Eight Kingdoms",
+      "source": "ours",
+      "file": "../../local/runtime/bfme-host/mod/maps/map mp bfmexbar eight kingdoms/map mp bfmexbar eight kingdoms.map"
+    },
+    {
+      "name": "Ashen March",
+      "source": "ours",
+      "file": "../../local/runtime/bfme-host/mod/maps/map mp bfmexbar ashen march/map mp bfmexbar ashen march.map"
+    },
+    {
+      "name": "Ithilien Frontier",
+      "source": "ours",
+      "file": "../../local/runtime/bfme-host/mod/maps/map mp bfmexbar ithilien frontier/map mp bfmexbar ithilien frontier.map"
+    },
+    {
+      "name": "Crown of Cardolan",
+      "source": "ours",
+      "file": "../../local/runtime/bfme-host/mod/maps/map mp bfmexbar crown of cardolan/map mp bfmexbar crown of cardolan.map"
+    }
+  ],
+  "patch_maps": [
+    "Fords of Isen II",
+    "Evendim",
+    "Ithilien",
+    "Greywater Marches",
+    "Eight Kingdoms",
+    "Ithilien Frontier",
+    "Crown of Cardolan"
+  ]
+}

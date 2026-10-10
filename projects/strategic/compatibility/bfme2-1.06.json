@@ -1,8 +1,0 @@
-{
-  "version": "BFME2 1.06",
-  "executable": "game.dat",
-  "architecture": "x86",
-  "sha256": "f008b587570bad693981dc7218588c81d192a1e064b0f7f861539c51156a7640",
-  "reference": "openbfme2",
-  "instruction_guards": "projects/strategic/native/strategic.cpp"
-}

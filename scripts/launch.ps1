@@ -2,6 +2,6 @@
 $ErrorActionPreference = 'Stop'
 $gameArguments = @($args)
 . (Join-Path $PSScriptRoot 'python.ps1')
-$pythonExe = Find-BfxPython
-& $pythonExe (Join-Path $PSScriptRoot 'bfx.py') play @gameArguments
+$pythonExe = Find-WorkshopPython
+& $pythonExe (Join-Path $PSScriptRoot 'workshop.py') play @gameArguments
 exit $LASTEXITCODE

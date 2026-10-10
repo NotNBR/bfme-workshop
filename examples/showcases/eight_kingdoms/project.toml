@@ -1,0 +1,11 @@
+schema = 1
+id = "eight-kingdoms"
+scenario = "eight-kingdoms-4v4"
+fps = 30
+capture_width = 1600
+capture_height = 720
+intro_seconds = 6
+outro_seconds = 6
+shots = "shots.json"
+titles = "titles.json"
+portrait = "local/artifacts/eight-kingdoms/detail-pass/photo/preview.jpg"
