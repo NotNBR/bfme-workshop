@@ -1,0 +1,14 @@
+{
+  "name": "bmfe-workshop-browser-example",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "BFME content meets strategic-scale RTS controls: local playable prototype",
+  "scripts": {
+    "start": "node tools/serve.mjs",
+    "test": "node --test src/tests/*.test.mjs",
+    "benchmark": "node tools/benchmark.mjs",
+    "import:bfme": "python ../../scripts/import-content.py --game ../../../bfme2 --reference ../../../openbfme2"
+  },
+  "engines": { "node": ">=20" }
+}

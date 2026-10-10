@@ -1,0 +1,5 @@
+# Global map-camera multiplier and multiplayer command-point ceiling multiplier.
+zoom_factor = 24
+army_factor = 4
+starting_cash = 10000
+starting_command_points = 1000

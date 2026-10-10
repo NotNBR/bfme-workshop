@@ -1,0 +1,5 @@
+# Copy to local/config.toml. Relative paths resolve against this checkout.
+[paths]
+game = "../lotrbfme2/local/bfme2"
+reference_tools = "../openbfme2/tools"
+compiler = "../openbfme2/reference/open-bfme-1/inputs/toolchains/vs2003/Program Files/Microsoft Visual Studio .NET 2003"

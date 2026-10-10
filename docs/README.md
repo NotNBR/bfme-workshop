@@ -1,17 +1,33 @@
 # Documentation
 
-| Guide | Contents |
-| --- | --- |
-| [Repository and setup](repository-layout.md) | Requirements, local configuration, project ownership and commands |
-| [Map-file specification](mapping/file-structure/specification.md) | Binary encodings, compression, chunks, fields, versions and companion files |
-| [BFME2 mapping](mapping/README.md) | File structure; terrain and presentation; navigation; scripts; players, economy and AI; compatibility |
-| [Map creation workflow](mapping/workflow.md) | From design and heightmap to an original native map |
-| [Strategic mod](../projects/strategic/README.md) | Camera, symbols, army caps and native extension |
-| [BFME2 host](bfme-host.md) | Isolated runtime and technical integration |
-| [The Ashen March](ashen-march.md) | Original-map design and implementation notes |
-| [Eight Kingdoms battle](../projects/scenarios/eight-kingdoms-4v4/README.md) | Staged 4v4 scenario |
-| [Eight Kingdoms showcase](../projects/showcases/eight-kingdoms/README.md) | Capture, editing and exports |
-| [Licenses and provenance](licenses/README.md) | Code, third-party references and media terms |
+## Getting started
 
-[Recoil experiment](recoil-experiment.md) and [early integration notes](native-integration.md)
-are historical experiments, not the current BFME2 setup path.
+- [Setup and first launch](getting-started/setup.md)
+- [Repository layout and ownership](getting-started/repository-layout.md)
+- [Machine-local configuration](getting-started/config.example.toml)
+
+## Guides
+
+- [Map creation workflow](guides/map-workflow.md) and [worked example](guides/map-workflow-example.md)
+- [Map authoring commands](guides/map-authoring.md)
+- [Strategic mod](../mods/strategic/README.md)
+- [Battle scenario](../examples/scenarios/eight_kingdoms_4v4/README.md)
+- [Capture, editing and exports](../examples/showcases/eight_kingdoms/README.md)
+
+## Reference
+
+- [BFME2 host and native integration](reference/host.md)
+- [Mapping reference](reference/mapping/README.md)
+- [Native map-file specification](reference/mapping/file-structure/specification.md)
+- [Map graphics and terrain plans](reference/mapping/terrain-and-presentation/graphics.md)
+- [Licenses and provenance](reference/licenses/README.md)
+
+## Research and evidence
+
+- [Consolidated feature inventory](research/consolidation.md)
+- [The Ashen March findings](research/ashen-march.md)
+- [Early native integration](research/native-integration.md)
+- [Recoil experiment](research/recoil.md)
+
+Research records measured behavior and remaining uncertainty. Current commands
+and workflows belong in getting-started documents and guides.

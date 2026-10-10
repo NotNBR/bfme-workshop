@@ -1,12 +1,13 @@
-local-content/
+/local/
 node_modules/
 __pycache__/
 *.log
-artifacts/
-.cache/
-runtime/
-.venv/
-scripts/config.local.toml
 *.egg-info/
 build/
 dist/
+
+# Text tooling and operating-system metadata.
+*.py[cod]
+.pytest_cache/
+Thumbs.db
+.DS_Store

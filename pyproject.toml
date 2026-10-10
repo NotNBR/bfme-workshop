@@ -3,9 +3,9 @@ requires = ["setuptools>=68"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "bfmexbar"
+name = "bmfe-workshop"
 version = "0.1.0"
-description = "BFME2 strategic controls, reproducible maps and gameplay showcases"
+description = "BFME2 tooling, native mods, documentation and reproducible examples"
 requires-python = ">=3.11"
 dependencies = ["capstone==5.0.7", "pefile==2024.8.26", "Pillow==12.3.0", "numpy==2.5.3"]
 
@@ -13,12 +13,13 @@ dependencies = ["capstone==5.0.7", "pefile==2024.8.26", "Pillow==12.3.0", "numpy
 video = ["imageio-ffmpeg==0.6.0"]
 
 [project.scripts]
-bfx = "bfmexbar.cli:main"
+workshop = "cli:main"
 
 [tool.setuptools.packages.find]
-where = ["src"]
-include = ["bfmexbar*", "tools*", "legacy.recoil*"]
+where = ["src", "."]
+include = ["cli*", "common*", "host*", "formats*", "mapkit*", "capture*", "video*", "scenarios*", "strategic*", "examples.maps*", "examples.showcases*", "mods.recoil.tools*"]
+exclude = ["*.tests", "*.tests.*", "*.__pycache__*"]
 
 
 [tool.setuptools.package-data]
-"bfmexbar.mapkit" = ["*.mjs", "data/*.json"]
+"mapkit" = ["*.mjs", "data/*.json"]
